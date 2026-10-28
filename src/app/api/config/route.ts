@@ -1,0 +1,37 @@
+import { customerKey } from "@/lib/server";
+import type { UserInfo } from "@/lib/types";
+import { accountsEnabled } from "@/lib/supabase/env";
+import { supabaseServer } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+/** What the browser needs to know about this deployment and the signed-in user. */
+export async function GET() {
+  let user: UserInfo | null = null;
+  let hasOwnKey = false;
+  if (accountsEnabled) {
+    const { userId, supabase } = await supabaseServer();
+    if (userId) {
+      const { data: rows } = await supabase.rpc("my_account");
+      const a = Array.isArray(rows) ? rows[0] : null;
+      user = {
+        email: a?.email ?? null,
+        confirmed: true,
+        credits: Number(a?.credits ?? 0),
+        plan: a?.plan === "weekly" ? "weekly" : "free",
+        planUntil: a?.plan_until ?? null,
+        weekStarted: a?.week_started ?? null,
+        isAdmin: !!a?.is_admin,
+      };
+      hasOwnKey = !!(await customerKey(userId));
+    }
+  }
+  return Response.json({
+    accountsEnabled,
+    googleLogin: true,
+    user,
+    allowUserKeys: process.env.ALLOW_USER_KEYS === "true",
+    hasServerClaudeKey: !!process.env.ANTHROPIC_API_KEY || hasOwnKey,
+    hasServerGoogleKey: !!process.env.GOOGLE_MAPS_API_KEY,
+  });
+}
