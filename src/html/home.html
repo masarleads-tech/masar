@@ -135,9 +135,10 @@ html[lang="en"] .hero-copy h1 { line-height: 1.04; letter-spacing: -0.035em; }
 .p-act span.go { background: var(--teal); color: #fff; }
 .p-tabs { display: flex; justify-content: space-around; padding: 10px 0 18px; border-top: 1px solid var(--sand); background: #fff; color: var(--stone); font-size: 10.5px; }
 .p-tabs span.on { color: var(--teal); font-weight: 700; }
-.caption { position: absolute; inset-inline-start: var(--gl); bottom: 6vh; max-width: 330px; margin: 0; font-size: 14px; color: var(--muted); }
-.caption b { display: block; color: var(--fg); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-@media (max-width: 760px) { html.motion .caption { display: none; } }
+/* Captions float on top of the app cards, on a frosted ink panel */
+.caption { position: absolute; z-index: 5; left: 0; right: 0; bottom: 7vh; width: fit-content; max-width: min(440px, calc(100% - 32px)); margin: 0 auto; padding: 14px 18px; border-radius: 14px; background: rgba(11, 19, 20, 0.78); border: 1px solid rgba(250, 248, 243, 0.1); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 14px; color: #c9d6d4; text-align: center; }
+.caption b { display: block; color: var(--fg); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+@media (max-width: 760px) { .caption { bottom: 4vh; font-size: 13px; padding: 12px 14px; } }
 
 /* ---------- Map (pinned) ---------- */
 .mapsec { position: relative; height: 270vh; }
@@ -755,7 +756,7 @@ html:not(.motion) .step:not(.s3) { display: none; }
     // Land the big logo exactly on the bar's logo
     const big = $("#logoHero").getBoundingClientRect(), nav = $("#navMark").getBoundingClientRect();
     const dock = { x: nav.left + nav.width / 2 - (big.left + big.width / 2), y: nav.top + nav.height / 2 - (big.top + big.height / 2), scale: nav.width / big.width };
-    gsap.set("#heroCopy", { autoAlpha: 0, y: 30 });
+    gsap.set("#heroCopy", { autoAlpha: 0, y: 30, scale: 1, filter: "blur(0px)" });
     gsap.set("#desk", { scale: s, y: H + 40, x: 0, top: mobile ? H * 0.47 : H * 0.36 });
     const phoneScale = mobile ? Math.min(0.8, (H * 0.6) / 600) : Math.min(1, (H * 0.64) / 600);
     gsap.set("#phone", { top: mobile ? H * 0.3 : H * 0.29, x: mobile ? 0 : -dir * Math.min(420, W * 0.27), y: H, rotate: dir * 5, scale: phoneScale });
@@ -774,13 +775,14 @@ html:not(.motion) .step:not(.s3) { display: none; }
       .to("#navWord", { autoAlpha: 1, duration: 0.4 }, 1.6)
       .to("#heroCopy", { autoAlpha: 1, y: 0, duration: 0.9, ease: "power2.out" }, 1.5)
       .to("#desk", { y: 0, duration: 1.6, ease: "power3.out" }, 2.4)
+      .to("#heroCopy", { autoAlpha: 0.07, scale: 1.04, filter: "blur(2px)", duration: 1.4, ease: "power2.inOut" }, 2.5)
+      .set("#heroCopy", { pointerEvents: "none" }, 2.6)
       .to("#capDesk", { autoAlpha: 1, y: 0, duration: 0.5 }, 3.4)
       .fromTo("#cursor", { autoAlpha: 0, x: W * (rtl ? 0.3 : 0.7), y: H * 0.98 },
         { autoAlpha: 1, duration: 1, x: () => scoreCell().left + scoreCell().width / 2, y: () => scoreCell().top + scoreCell().height / 2 }, 4.1)
       .call(() => { const r = $('#desk [data-row="0"]'); if (r) r.classList.toggle("hot", tlIntro.scrollTrigger.direction > 0); }, null, 5.1)
       .to("#cursor", { autoAlpha: 0, duration: 0.3 }, 5.6)
       .to("#capDesk", { autoAlpha: 0, duration: 0.4 }, 5.6)
-      .to("#heroCopy", { autoAlpha: mobile ? 0 : 0.3, duration: 0.8 }, 5.6)
       .to("#desk", mobile ? { autoAlpha: 0.15, scale: s * 0.94, duration: 1.2 } : { x: dir * W * 0.11, scale: s * 0.86, duration: 1.2, ease: "power2.inOut" }, 5.6)
       .to("#phone", { y: mobile ? -H * 0.02 : -H * 0.05, rotate: 0, duration: 1.5, ease: "power3.out" }, 5.8)
       .to("#capPhone", { autoAlpha: 1, y: 0, duration: 0.5 }, 6.8)
