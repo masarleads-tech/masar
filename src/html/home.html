@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Masar · مسار</title>
+<meta name="description" content="Masar finds the businesses in the Gulf and the Middle East that are ready to buy.">
+<meta name="theme-color" content="#0b1314">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one dark Masar world in the brand ink. Pinned intro (logo docks into the bar > desktop > phone),
+   then a pinned vector map that zooms out from Amman to Jordan to the GCC & Middle East. Arabic first. */
+:root {
+  --bg: #0b1314;         /* sea and sky: deepest ink */
+  --ink: #101a1b;        /* brand ink: logo tile, app sidebar */
+  --land: #142322;       /* map land */
+  --border: #2a4643;     /* map borders */
+  --teal: #176b64;       /* brand teal */
+  --teal-hi: #2f897c;
+  --mint: #72b7a7;       /* brand dot */
+  --paper: #faf8f3;      /* logo stroke, app work area */
+  --sand: #e5e2d9;
+  --stone: #777b75;
+  --fg: #eef2f0;
+  --muted: #9aaeac;
+  --line: rgba(154, 174, 172, 0.18);
+  --panel: #121e1f;
+  --font-en: "Manrope", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-ar: "IBM Plex Sans Arabic", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: var(--font-ar);
+  --gl: max(16px, env(safe-area-inset-left, 0px));
+  --gr: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: dark;
+}
+html[lang="en"] { --font: var(--font-en); }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.65; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- Top bar ---------- */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+.nav { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; padding-left: var(--gl); padding-right: var(--gr); background: linear-gradient(to bottom, rgba(11, 19, 20, 0.92), rgba(11, 19, 20, 0)); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; direction: ltr; }
+.brand svg { display: block; }
+.brand .word { display: flex; flex-direction: column; line-height: 1; }
+.brand .word b { font: 800 19px/1 var(--font-en); letter-spacing: -0.03em; }
+.brand .word small { font: 500 11px/1 var(--font-ar); color: var(--muted); margin-top: 4px; }
+.nav-links { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+.nav-links a { text-decoration: none; }
+.nav-links a:hover { color: var(--fg); }
+.nav-end { display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 0 16px; border-radius: 6px; font-weight: 600; font-size: 14px; line-height: 1; text-decoration: none; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.solid { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.btn.mint { background: var(--mint); color: var(--ink); border-color: var(--mint); }
+.btn.lang { min-height: 34px; padding: 0 12px; font-size: 13px; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+@media (max-width: 960px) { .nav-links, .nav-end .hide-sm { display: none; } }
+@media (max-width: 400px) { .nav-end .hide-xs { display: none; } }
+
+/* ---------- Intro (pinned) ---------- */
+.intro { position: relative; height: 300vh; }
+.stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.sky { position: absolute; inset: 0; background: radial-gradient(48% 42% at 50% 46%, rgba(23, 107, 100, 0.28), transparent 70%), linear-gradient(180deg, var(--bg), #0e1a1b); }
+.sky svg { position: absolute; inset: -5%; width: 110%; height: 110%; }
+.sky path { fill: none; stroke: var(--teal-hi); stroke-width: 1; opacity: 0.22; vector-effect: non-scaling-stroke; }
+.logo-hero { position: absolute; left: 50%; top: 42%; width: min(34vmin, 230px); aspect-ratio: 1; transform-origin: 50% 50%; translate: -50% -50%; will-change: transform; }
+.logo-hero svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 24px 60px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 40px rgba(114, 183, 167, 0.18)); }
+.lockup { position: absolute; left: 0; right: 0; top: calc(42% + min(34vmin, 230px) / 2 + 26px); text-align: center; }
+.lockup .ar-name { display: block; font: 700 clamp(34px, 5vw, 52px)/1.1 var(--font-ar); }
+.lockup .en-name { display: block; font: 800 16px/1.2 var(--font-en); letter-spacing: 0.02em; color: var(--muted); margin-top: 6px; }
+.lockup .tag { display: block; margin-top: 14px; color: var(--muted); font-size: 15px; padding-left: var(--gl); padding-right: var(--gr); }
+.scroll-hint { position: absolute; left: 50%; bottom: 4vh; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.scroll-hint i { width: 1px; height: 34px; background: linear-gradient(var(--mint), transparent); animation: drip 1.8s ease-in-out infinite; }
+@keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+.hero-copy { position: absolute; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + 80px); text-align: center; padding-left: var(--gl); padding-right: var(--gr); }
+.hero-copy h1 { margin: 0 auto; max-width: 16ch; font-size: clamp(30px, 5.2vw, 64px); line-height: 1.18; font-weight: 700; text-wrap: balance; }
+html[lang="en"] .hero-copy h1 { line-height: 1.04; letter-spacing: -0.035em; }
+.hero-copy h1 em { font-style: normal; color: var(--mint); }
+.hero-copy p { margin: 12px auto 0; max-width: 46ch; color: var(--muted); font-size: clamp(15px, 1.5vw, 18px); }
+.hero-copy .actions { margin-top: 18px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+
+.device-row { position: absolute; inset: 0; pointer-events: none; }
+/* Desktop app: built at 1100x640, scaled to fit */
+.desk { position: absolute; left: 50%; top: 0; width: 1100px; height: 640px; margin-left: -550px; border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 210px 1fr; background: var(--paper); color: var(--ink); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08); transform-origin: top center; }
+.side { background: var(--ink); color: #dfe7e5; padding: 18px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.side .s-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font: 800 17px/1 var(--font-en); letter-spacing: -0.03em; direction: ltr; }
+.side span.item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: #b7c6c4; }
+.side span.item.on { background: rgba(114, 183, 167, 0.14); color: #fff; }
+.side .credits { margin-top: auto; padding: 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); font-size: 12px; color: #b7c6c4; }
+.side .credits b { display: block; font: 700 22px/1.3 var(--font-en); color: #fff; }
+.work { padding: 22px 26px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.brief { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.brief h3 { margin: 0; margin-inline-end: 12px; font-size: 20px; }
+.chip { font-size: 12px; padding: 4px 10px; border-radius: 99px; background: #fff; border: 1px solid var(--sand); color: #3a4846; }
+.chip.t { background: #dcece7; border-color: #dcece7; color: #12564f; }
+.table { background: #fff; border: 1px solid var(--sand); border-radius: 10px; overflow: hidden; font-size: 13px; }
+.tr { display: grid; grid-template-columns: 2.3fr 1fr 1.3fr 0.6fr 1fr; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid #efece5; transition: background 0.25s; }
+.tr.head { border-top: 0; background: #f6f4ee; color: var(--stone); font-size: 11.5px; font-weight: 600; }
+.tr .nm b { display: block; font-size: 13.5px; }
+.tr .nm span { color: var(--stone); font-size: 12px; }
+.bar { height: 6px; border-radius: 6px; background: #ece9e1; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; background: var(--teal); }
+.score { font: 700 13px/1 var(--font-en); font-variant-numeric: tabular-nums; }
+.st { font-size: 11.5px; padding: 3px 9px; border-radius: 99px; justify-self: start; }
+.st.new { background: #f0ece2; color: #5b5f59; }
+.st.meet { background: #dcece7; color: #12564f; }
+.st.won { background: var(--teal); color: #fff; }
+.tr.hot { background: #eef7f4; }
+.cursor { position: fixed; left: 0; top: 0; width: 22px; height: 22px; z-index: 4; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); pointer-events: none; }
+/* Phone */
+.phone { position: absolute; left: 50%; top: 0; width: 290px; height: 600px; margin-left: -145px; border-radius: 42px; padding: 10px; background: #050b0c; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.12) inset; transform-origin: top center; }
+.screen { width: 100%; height: 100%; border-radius: 33px; overflow: hidden; background: var(--paper); color: var(--ink); display: flex; flex-direction: column; font-size: 12px; }
+.p-top { background: var(--ink); color: #fff; padding: 34px 16px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.p-top b { font: 800 16px/1 var(--font-en); letter-spacing: -0.03em; }
+.p-top span { font-size: 11px; color: #b7c6c4; }
+.p-list { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.p-card { background: #fff; border: 1px solid var(--sand); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
+.p-card b { font-size: 13px; }
+.p-card small { color: var(--stone); }
+.ring { grid-row: 1 / span 2; grid-column: 2; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 var(--font-en); background: conic-gradient(var(--teal) var(--p), #ece9e1 0); position: relative; }
+.ring::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: #fff; }
+.ring span { position: relative; z-index: 1; }
+.p-act { grid-column: 1 / -1; display: flex; gap: 6px; margin-top: 6px; }
+.p-act span { flex: 1; text-align: center; padding: 7px 0; border-radius: 8px; font-weight: 600; font-size: 11px; background: #f0ece2; }
+.p-act span.go { background: var(--teal); color: #fff; }
+.p-tabs { display: flex; justify-content: space-around; padding: 10px 0 18px; border-top: 1px solid var(--sand); background: #fff; color: var(--stone); font-size: 10.5px; }
+.p-tabs span.on { color: var(--teal); font-weight: 700; }
+.caption { position: absolute; inset-inline-start: var(--gl); bottom: 6vh; max-width: 330px; margin: 0; font-size: 14px; color: var(--muted); }
+.caption b { display: block; color: var(--fg); font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+@media (max-width: 760px) { html.motion .caption { display: none; } }
+
+/* ---------- Map (pinned) ---------- */
+.mapsec { position: relative; height: 270vh; }
+.mapsec .stage { background: var(--bg); }
+#mapsvg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#mapsvg .c { fill: var(--land); stroke: var(--border); stroke-width: 0.8; vector-effect: non-scaling-stroke; stroke-linejoin: round; transition: fill 0.8s; }
+#mapsvg[data-stage="1"] .c.jo, #mapsvg[data-stage="2"] .c.jo { fill: #1d3a37; }
+#mapsvg[data-stage="2"] .c.gcc { fill: #193432; }
+#mapsvg .lake { fill: var(--bg); }
+#mapsvg .grat { fill: none; stroke: rgba(154, 174, 172, 0.06); stroke-width: 1; vector-effect: non-scaling-stroke; }
+#mapsvg .road { fill: none; stroke: var(--teal-hi); stroke-opacity: 0.55; stroke-width: 1.3; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+#mapsvg .road.minor { stroke-opacity: 0.3; stroke-width: 0.9; }
+#mapsvg .route { fill: none; stroke: var(--mint); stroke-linecap: round; }
+#mapsvg .route-glow { fill: none; stroke: var(--mint); stroke-opacity: 0.2; stroke-linecap: round; }
+#mapsvg .dot { fill: var(--mint); }
+#mapsvg .dot.home { fill: var(--paper); }
+#mapsvg .ping { fill: none; stroke: var(--mint); }
+#mapsvg text { font-family: var(--font); fill: #dbe6e3; paint-order: stroke; stroke: rgba(11, 19, 20, 0.9); stroke-linejoin: round; }
+#mapsvg text.big { fill: var(--mint); font-weight: 700; }
+#mapsvg text.home { fill: #fff; font-weight: 700; }
+.shade { position: absolute; inset: 0; pointer-events: none; }
+html[dir="rtl"] .shade { background: linear-gradient(270deg, rgba(11, 19, 20, 0.94) 0%, rgba(11, 19, 20, 0.6) 34%, rgba(11, 19, 20, 0) 56%), linear-gradient(180deg, rgba(11, 19, 20, 0.7), transparent 16%, transparent 84%, rgba(11, 19, 20, 0.85)); }
+html[dir="ltr"] .shade { background: linear-gradient(90deg, rgba(11, 19, 20, 0.94) 0%, rgba(11, 19, 20, 0.6) 34%, rgba(11, 19, 20, 0) 56%), linear-gradient(180deg, rgba(11, 19, 20, 0.7), transparent 16%, transparent 84%, rgba(11, 19, 20, 0.85)); }
+.steps { position: absolute; inset-inline-start: var(--gl); top: 50%; width: min(440px, calc(100vw - 32px)); }
+.step { position: absolute; left: 0; right: 0; top: 0; }
+.eyebrow { font-size: 13px; font-weight: 700; color: var(--mint); }
+html[lang="en"] .eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+.step h2 { margin: 8px 0 12px; font-size: clamp(28px, 4vw, 50px); line-height: 1.2; font-weight: 700; text-wrap: balance; }
+html[lang="en"] .step h2 { line-height: 1.05; letter-spacing: -0.03em; }
+.step p { margin: 0; color: #c9d6d4; font-size: 17px; max-width: 40ch; }
+.stats { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 18px; }
+.stats div { font-size: 12.5px; color: var(--muted); }
+.stats b { display: block; font: 700 28px/1.2 var(--font-en); color: var(--fg); font-variant-numeric: tabular-nums; }
+.progress { position: absolute; inset-inline-end: var(--gr); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; }
+.progress i { width: 3px; height: 26px; border-radius: 3px; background: var(--line); transition: background 0.3s; }
+.progress i.on { background: var(--mint); }
+@media (max-width: 760px) {
+  html[dir] .shade { background: linear-gradient(180deg, rgba(11, 19, 20, 0.5), rgba(11, 19, 20, 0) 14%, rgba(11, 19, 20, 0) 44%, rgba(11, 19, 20, 0.95) 64%); }
+  .steps { top: auto; bottom: 5vh; }
+  .step { top: auto; bottom: 0; }
+  .step p { font-size: 15px; }
+  .stats b { font-size: 22px; }
+  .progress { display: none; }
+}
+
+/* ---------- Download ---------- */
+.get { padding-block: 110px 40px; padding-left: var(--gl); padding-right: var(--gr); background: var(--bg); }
+.get-in { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.get-head { grid-column: 1 / -1; text-align: center; margin-bottom: 20px; }
+.get-head h2 { margin: 0; font-size: clamp(28px, 4vw, 46px); line-height: 1.2; text-wrap: balance; }
+.get-head p { margin: 10px auto 0; color: var(--muted); max-width: 46ch; }
+.get-card { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 26px; border-radius: 16px; border: 1px solid var(--line); background: var(--panel); text-align: start; cursor: pointer; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+.get-card:hover { border-color: var(--mint); transform: translateY(-2px); }
+.get-card .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(114, 183, 167, 0.12); color: var(--mint); }
+.get-card .ico svg { width: 24px; height: 24px; }
+.get-card h3 { margin: 0; font-size: 22px; }
+.get-card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.get-card .os { display: flex; gap: 8px; flex-wrap: wrap; }
+.get-card .os span { font: 600 12px/1 var(--font-en); padding: 6px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+@media (max-width: 760px) { .get-in { grid-template-columns: 1fr; } }
+
+/* Download sheet */
+.sheet-bg { position: fixed; inset: 0; z-index: 80; background: rgba(5, 10, 11, 0.7); backdrop-filter: blur(6px); display: grid; place-items: center; padding-left: var(--gl); padding-right: var(--gr); opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.sheet-bg.open { opacity: 1; pointer-events: auto; }
+.sheet { width: min(560px, 100%); max-height: 88vh; overflow: auto; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); padding: 24px; transform: translateY(14px); transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1); }
+.sheet-bg.open .sheet { transform: none; }
+.sheet-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+.sheet h3 { margin: 0; font-size: 22px; }
+.x { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 18px; line-height: 1; }
+.sheet > p { margin: 0 0 18px; color: var(--muted); font-size: 14.5px; }
+.opts { display: grid; gap: 10px; }
+.opt { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.02); }
+.opt.mine { border-color: var(--mint); }
+.opt .oi { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.05); }
+.opt .oi svg { width: 22px; height: 22px; }
+.opt .ot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.opt .ot b { font-size: 15.5px; }
+.opt .ot small { color: var(--muted); font-size: 12.5px; }
+.opt .tagmine { font-size: 11px; color: var(--mint); font-weight: 700; }
+.howto { margin: 10px 0 0; padding: 14px 16px; border-radius: 12px; background: rgba(114, 183, 167, 0.08); color: #cfe0dc; font-size: 14px; }
+.howto ol { margin: 6px 0 0; padding-inline-start: 20px; }
+.soon { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); color: var(--muted); font-size: 13.5px; }
+
+/* ---------- Close + footer ---------- */
+.close { position: relative; padding-block: 90px 40px; padding-left: var(--gl); padding-right: var(--gr); background: linear-gradient(180deg, var(--bg), #0e1a1b); }
+.close-in { max-width: 1100px; margin: 0 auto; }
+.cta { text-align: center; }
+.cta h2 { margin: 0 auto; max-width: 18ch; font-size: clamp(28px, 4.6vw, 56px); line-height: 1.2; font-weight: 700; text-wrap: balance; }
+html[lang="en"] .cta h2 { line-height: 1.05; letter-spacing: -0.035em; }
+.cta p { color: var(--muted); max-width: 46ch; margin: 14px auto 24px; }
+.contact { margin-top: 80px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; padding: 28px; border-radius: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); }
+.contact h3 { margin: 0 0 6px; font-size: 24px; }
+.contact p { margin: 0; color: var(--muted); }
+.ways { display: grid; gap: 10px; align-content: start; }
+.way { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); min-width: 0; }
+.way span { display: flex; flex-direction: column; min-width: 0; }
+.way small { color: var(--muted); font-size: 12px; }
+.way b { font: 600 15px/1.4 var(--font-en); direction: ltr; text-align: start; user-select: all; overflow-wrap: anywhere; }
+.copy { min-height: 32px; padding: 0 12px; font-size: 12.5px; }
+.socials { display: flex; gap: 10px; margin-top: 18px; }
+.socials a { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--fg); }
+.socials a:hover { border-color: var(--mint); color: var(--mint); }
+.socials svg { width: 20px; height: 20px; }
+.foot { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px 24px; font-size: 13px; color: var(--muted); }
+.legal { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.legal a { text-decoration: none; }
+.legal a:hover { color: var(--fg); text-decoration: underline; }
+.note { font-size: 12px; opacity: 0.8; }
+@media (max-width: 760px) { .contact { grid-template-columns: 1fr; padding: 20px; } }
+
+/* ---------- Static fallback (no script or reduced motion) ---------- */
+html:not(.motion) .intro, html:not(.motion) .mapsec { height: auto; }
+html:not(.motion) .stage { position: relative; height: auto; overflow: visible; }
+html:not(.motion) .intro .stage { padding-block: 100px 60px; }
+html:not(.motion) .logo-hero, html:not(.motion) .lockup, html:not(.motion) .scroll-hint, html:not(.motion) .cursor { display: none; }
+html:not(.motion) .hero-copy, html:not(.motion) .caption { position: relative; top: auto; bottom: auto; inset-inline-start: auto; margin: 24px auto 0; text-align: center; }
+html:not(.motion) .device-row { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; margin-top: 32px; }
+html:not(.motion) .desk { position: relative; left: auto; margin: 0 0 calc((var(--fit, 1) - 1) * 640px); transform: scale(var(--fit, 1)); }
+html:not(.motion) .phone { position: relative; left: auto; margin: 0; }
+html:not(.motion) .mapsec .stage { height: 100vh; }
+html:not(.motion) .step:not(.s3) { display: none; }
+@media (prefers-reduced-motion: reduce) { .scroll-hint i { animation: none; } .sheet, .sheet-bg { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="Masar مسار">
+    <svg id="navMark" viewBox="0 0 96 96" width="34" height="34" aria-hidden="true"><rect width="96" height="96" rx="20" fill="#101A1B"/><rect x=".75" y=".75" width="94.5" height="94.5" rx="19.25" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5"/><path d="M25 67V34c0-5 4-9 9-9h10c5 0 9 4 9 9v12c0 5 4 9 9 9h9" fill="none" stroke="#FAF8F3" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="74" cy="55" r="7" fill="#72B7A7"/></svg>
+    <span class="word" id="navWord"><b>masar</b><small>مسار</small></span>
+  </a>
+  <nav class="nav-links" aria-label="Main">
+    <a href="#app" data-t="navProduct"></a><a href="#map-sec" data-t="navCoverage"></a><a href="#download" data-t="navDownload"></a><a href="#contact" data-t="navContact"></a>
+  </nav>
+  <div class="nav-end">
+    <button class="btn lang" id="langBtn" type="button" data-t="langBtn"></button>
+    <a class="btn hide-sm" href="/login" data-t="navLogin"></a>
+    <a class="btn solid" href="/login?mode=signup" data-t="navStart"></a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="intro" id="app">
+    <div class="stage">
+      <div class="sky" aria-hidden="true">
+        <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+          <path d="M-20 640C140 580 260 600 380 530S600 370 760 390 1000 310 1220 340"/>
+          <path d="M80 820C160 700 230 640 300 520S420 300 520 220 640 60 700-20"/>
+          <path d="M420 820C470 700 520 640 600 600S800 560 880 470 1040 300 1220 260"/>
+          <path d="M-20 300C120 320 220 280 330 300S560 380 680 340 900 200 1220 180"/>
+          <path d="M900 820C880 700 920 600 980 520S1100 420 1220 400"/>
+        </svg>
+      </div>
+
+      <div class="logo-hero" id="logoHero" aria-hidden="true">
+        <svg viewBox="0 0 96 96">
+          <rect width="96" height="96" rx="20" fill="#101A1B"/>
+          <rect x=".75" y=".75" width="94.5" height="94.5" rx="19.25" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5"/>
+          <path class="stroke" d="M25 67V34c0-5 4-9 9-9h10c5 0 9 4 9 9v12c0 5 4 9 9 9h9" fill="none" stroke="#FAF8F3" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle class="dot" cx="74" cy="55" r="7" fill="#72B7A7"/>
+        </svg>
+      </div>
+      <div class="lockup" id="lockup"><span class="ar-name">مسار</span><span class="en-name">masar</span><span class="tag" data-t="tag"></span></div>
+      <div class="scroll-hint" id="hint"><span data-t="scroll"></span><i></i></div>
+
+      <div class="hero-copy" id="heroCopy">
+        <h1 data-h="heroH"></h1>
+        <p data-t="heroP"></p>
+        <div class="actions"><a class="btn mint" href="/login?mode=signup" data-t="cta1"></a><a class="btn" href="#download" data-t="navDownload"></a></div>
+      </div>
+
+      <div class="device-row" aria-hidden="true">
+        <div class="desk" id="desk"></div>
+        <div class="phone" id="phone"><div class="screen" id="screen"></div></div>
+      </div>
+      <svg class="cursor" id="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l15 11-6.5 1.2L16 21l-3 1.4-3.4-6.9L4 20z" fill="#fff" stroke="#101a1b" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      <p class="caption" id="capDesk"><b data-t="capDeskT"></b><span data-t="capDesk"></span></p>
+      <p class="caption" id="capPhone"><b data-t="capPhoneT"></b><span data-t="capPhone"></span></p>
+    </div>
+  </section>
+
+  <section class="mapsec" id="map-sec">
+    <div class="stage">
+      <svg id="mapsvg" role="img" aria-label="Map: Amman, Jordan, the GCC and the Middle East" data-stage="0"></svg>
+      <div class="shade"></div>
+      <div class="steps">
+        <div class="step s1"><span class="eyebrow" data-t="s1e"></span><h2 data-t="s1h"></h2><p data-t="s1p"></p></div>
+        <div class="step s2" id="about"><span class="eyebrow" data-t="s2e"></span><h2 data-t="s2h"></h2><p data-t="s2p"></p></div>
+        <div class="step s3"><span class="eyebrow" data-t="s3e"></span><h2 data-t="s3h"></h2><p data-t="s3p"></p>
+          <div class="stats"><div><b>6</b><span data-t="st1"></span></div><div><b>2</b><span data-t="st2"></span></div><div><b>10</b><span data-t="st3"></span></div></div>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <section class="get" id="download">
+    <div class="get-in">
+      <div class="get-head"><h2 data-t="getH"></h2><p data-t="getP"></p></div>
+      <button class="get-card" type="button" data-sheet="desktop">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>
+        <h3 data-t="getDesk"></h3><p data-t="getDeskP"></p>
+        <span class="os"><span>macOS</span><span>Windows</span><span>Linux</span></span>
+      </button>
+      <button class="get-card" type="button" data-sheet="mobile">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span>
+        <h3 data-t="getMob"></h3><p data-t="getMobP"></p>
+        <span class="os"><span>iPhone</span><span>Android</span></span>
+      </button>
+    </div>
+  </section>
+
+  <section class="close" id="start">
+    <div class="close-in">
+      <div class="cta">
+        <h2 data-t="closeH"></h2>
+        <p data-t="closeP"></p>
+        <a class="btn mint" href="/login?mode=signup" data-t="navStart"></a>
+      </div>
+
+      <div class="contact" id="contact">
+        <div>
+          <h3 data-t="contactH"></h3>
+          <p data-t="contactP"></p>
+          <div class="socials">
+            <a href="#contact" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#contact" aria-label="LinkedIn" title="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5zM10 9h2.9v1.5h.04c.4-.76 1.38-1.56 2.85-1.56 3.05 0 3.61 2 3.61 4.6V20h-3v-5.6c0-1.34-.03-3.06-1.86-3.06-1.87 0-2.15 1.46-2.15 2.96V20H10z"/></svg></a>
+            <a href="https://wa.me/962796104412" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z"/><path d="M9 8.2c-.3 0-.7.1-.9.5-.3.5-.6 1.2-.4 2 .4 1.6 2.2 3.6 4.1 4.4.9.4 1.7.4 2.2.1.4-.2.7-.6.8-1 .1-.3 0-.5-.3-.6l-1.5-.7c-.3-.1-.5 0-.6.2l-.5.6c-.1.2-.3.2-.5.1-.9-.4-1.7-1.2-2.1-2.1-.1-.2 0-.4.1-.5l.5-.5c.2-.2.2-.4.1-.6l-.6-1.5c-.1-.3-.3-.4-.5-.4z" fill="currentColor" stroke="none"/></svg></a>
+            <a href="mailto:masar.leads@gmail.com" aria-label="Email" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg></a>
+          </div>
+        </div>
+        <div class="ways">
+          <div class="way"><span><small data-t="emailL"></small><b id="emailVal">masar.leads@gmail.com</b></span><button class="btn copy" type="button" data-copy="emailVal" data-t="copy"></button></div>
+          <div class="way"><span><small data-t="waL"></small><b id="waVal" dir="ltr">+962 79 610 4412</b></span><button class="btn copy" type="button" data-copy="waVal" data-t="copy"></button></div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <nav class="legal" aria-label="Legal">
+          <a href="/legal/privacy" data-t="privacy"></a>
+          <a href="/legal/terms" data-t="terms"></a>
+          <a href="/legal/refund" data-t="refund"></a>
+          <a href="#contact" data-t="navContact"></a>
+        </nav>
+        <span><span data-t="rights"></span> · <span class="note" data-t="note"></span></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="sheet-bg" id="sheetBg" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet">
+    <div class="sheet-top"><h3 id="sheetTitle"></h3><button class="x" type="button" id="sheetX" aria-label="Close">×</button></div>
+    <p id="sheetSub"></p>
+    <div class="opts" id="sheetOpts"></div>
+    <div id="sheetMore"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const root = document.documentElement;
+  const gsap = window.gsap;
+
+  /* ================= Copy (Arabic first, English) ================= */
+  const T = {
+    ar: {
+      langBtn: "English", navProduct: "المنتج", navCoverage: "التغطية", navDownload: "حمّل التطبيق", navContact: "تواصل معنا", navLogin: "تسجيل الدخول", navStart: "ابدأ مجاناً",
+      tag: "عملاؤك الجايين في الخليج والشرق الأوسط", scroll: "مرّر للأسفل",
+      heroH: "اوصل للشركات <em>الجاهزة تشتري.</em>",
+      heroP: "مسار يدوّر لك في الويب والخرايط، ويقيّم كل شركة حسب فرصة إنها تشتري، ويعطيك رقمها.",
+      cta1: "خذ 10 عملاء مجاناً",
+      capDeskT: "على جهازك", capDesk: "سوّ بحث، رتّب حسب فرصة الإغلاق، وتابع كل عميل من جديد إلى صفقة.",
+      capPhoneT: "على جوالك", capPhone: "ثبّت مسار على الآيفون أو الأندرويد واتصل بالعميل أول ما يوصلك.",
+      s1e: "وش نسوي", s1h: "نجيب لك العملاء، وأنت تقفل الصفقة.", s1p: "قل لمسار مين تبيع له ووين. يدوّر في الويب والخرايط، يتأكد من كل شركة، ويقيّم احتمال إنها تشتري منك هالشهر.",
+      s2e: "مين حنا", s2h: "انطلقنا من عمّان، الأردن.", s2p: "فريق صغير تعب من القوائم القديمة اللي كلها محلات مسكّرة وأرقام ما ترد. سوّينا مسار: عملاء جدد، أرقام حقيقية، بالعربي والإنجليزي.",
+      s3e: "وين نشتغل", s3h: "الخليج والشرق الأوسط.", s3p: "بحث واحد يغطي الرياض وجدة والدمام والكويت والمنامة والدوحة وأبوظبي ودبي ومسقط وعمّان.",
+      st1: "دول الخليج كلها", st2: "لغتين", st3: "عملاء مجاناً للبداية",
+      getH: "مسار معك وين ما كنت.", getP: "استخدمه من المتصفح، أو حمّله على جهازك وجوالك.",
+      getDesk: "للكمبيوتر", getDeskP: "تطبيق مسار لماك وويندوز ولينكس.", getMob: "للجوال", getMobP: "مسار على الآيفون والأندرويد، يشتغل مثل أي تطبيق.",
+      shDesk: "حمّل مسار للكمبيوتر", shDeskP: "اختر نظام جهازك.", shMob: "مسار على جوالك", shMobP: "اختر نوع جوالك.",
+      mac: "ماك", macS: "macOS 12 أو أحدث · Apple Silicon و Intel", win: "ويندوز", winS: "Windows 10 و 11 · 64-bit", lin: "لينكس", linS: "Ubuntu و Debian · ‎.deb و AppImage",
+      iph: "آيفون", iphS: "iOS 16 أو أحدث", and: "أندرويد", andS: "Android 10 أو أحدث",
+      yours: "جهازك", download: "تحميل",
+      soonDesk: "تطبيق الكمبيوتر قيد التطوير. أول ما يجهز بنرسل لك رابط التحميل على إيميلك، وإلى ذاك الحين تقدر تستخدم مسار من المتصفح.",
+      iosHow: "ثبّته على الآيفون:", iosSteps: ["افتح موقع مسار في سفاري", "اضغط زر المشاركة", "اختر «إضافة إلى الشاشة الرئيسية»"],
+      andHow: "ثبّته على الأندرويد:", andSteps: ["افتح موقع مسار في كروم", "اضغط القائمة ⋮", "اختر «تثبيت التطبيق»"],
+      closeH: "عميلك الجاي موجود على الخريطة.", closeP: "سجّل بإيميلك وخذ 10 عملاء مجاناً. بدون بطاقة.",
+      contactH: "تواصل معنا", contactP: "عندك سؤال أو تبي باقة لفريقك؟ راسلنا وبنرد عليك خلال يوم عمل.",
+      emailL: "الإيميل", waL: "واتساب", copy: "نسخ", copied: "تم النسخ",
+      privacy: "سياسة الخصوصية", terms: "الشروط والأحكام", refund: "سياسة الاسترجاع",
+      rights: "© 2026 مسار", note: "نموذج تجريبي: الشركات والأرقام المعروضة أمثلة.",
+      gcc: "الخليج العربي", me: "الشرق الأوسط", jordan: "الأردن",
+      app: {
+        items: ["بحث جديد", "السجل", "التقارير", "الإعدادات"], left: "العملاء المتبقين", plan: "الباقة الأسبوعية · تتجدد الأحد",
+        title: "محامص ومقاهي مختصة", chips: ["عمّان", "الرياض", "دبي"], extra: ["مستقلة فقط", "40 عميل"],
+        head: ["الشركة", "المدينة", "فرصة الإغلاق", "التقييم", "الحالة"],
+        rows: [["محمصة رفيق", "جبل اللويبدة · فتحت قبل 4 شهور", "عمّان", 91, "meet"], ["قهوة الوادي", "يوظفون باريستا · فرعين", "الرياض", 86, "new"], ["مختبر سند للقهوة", "أطلقوا منيو جديد الأسبوع الماضي", "دبي", 82, "won"], ["بيت البن", "المالك يرد على الواتساب", "عمّان", 77, "new"], ["مقهى مرسى", "فرع ثالث قريباً", "الرياض", 71, "new"], ["حجاز برو بار", "التقييمات تشتكي من بطء الخدمة", "جدة", 64, "new"]],
+        status: { new: "جديد", meet: "اجتماع", won: "صفقة" },
+        phoneLeft: "86 عميل متبقي", call: "اتصال", wa: "واتساب", tabs: ["بحث", "العملاء", "السجل", "حسابي"]
+      }
+    },
+    en: {
+      langBtn: "العربية", navProduct: "Product", navCoverage: "Coverage", navDownload: "Download", navContact: "Contact us", navLogin: "Log in", navStart: "Start free",
+      tag: "Your next customers across the GCC and Middle East", scroll: "Scroll",
+      heroH: "Find the businesses <em>ready to buy.</em>",
+      heroP: "Masar searches the web and the map for you, scores each business on how likely it is to buy, and gives you its number.",
+      cta1: "Get 10 free leads",
+      capDeskT: "On your computer", capDesk: "Run a search, sort by closing chance, and track every lead from new to won.",
+      capPhoneT: "On your phone", capPhone: "Install Masar on iPhone or Android and call a lead the moment it arrives.",
+      s1e: "What we do", s1h: "We find the leads. You close them.", s1p: "Tell Masar who you sell to and where. It searches the web and the map, checks each business, and scores how likely it is to buy from you this month.",
+      s2e: "Who we are", s2h: "Built in Amman, Jordan.", s2p: "A small team tired of old lists full of closed shops and dead numbers. So we built Masar: fresh leads, real numbers, in Arabic and English.",
+      s3e: "Where we work", s3h: "GCC & Middle East.", s3p: "One search covers Riyadh, Jeddah, Dammam, Kuwait, Manama, Doha, Abu Dhabi, Dubai, Muscat and Amman.",
+      st1: "GCC countries", st2: "languages", st3: "free leads to start",
+      getH: "Masar goes where you go.", getP: "Use it in your browser, or install it on your computer and phone.",
+      getDesk: "For computers", getDeskP: "The Masar app for Mac, Windows and Linux.", getMob: "For phones", getMobP: "Masar on iPhone and Android, just like any other app.",
+      shDesk: "Download Masar for your computer", shDeskP: "Choose your system.", shMob: "Masar on your phone", shMobP: "Choose your phone.",
+      mac: "Mac", macS: "macOS 12 or later · Apple Silicon and Intel", win: "Windows", winS: "Windows 10 and 11 · 64-bit", lin: "Linux", linS: "Ubuntu and Debian · .deb and AppImage",
+      iph: "iPhone", iphS: "iOS 16 or later", and: "Android", andS: "Android 10 or later",
+      yours: "Your device", download: "Download",
+      soonDesk: "The computer app is still being built. We'll email you the download link as soon as it's ready. Until then, you can use Masar in your browser.",
+      iosHow: "Install on iPhone:", iosSteps: ["Open the Masar site in Safari", "Tap the Share button", "Choose “Add to Home Screen”"],
+      andHow: "Install on Android:", andSteps: ["Open the Masar site in Chrome", "Tap the ⋮ menu", "Choose “Install app”"],
+      closeH: "Your next customer is already on the map.", closeP: "Sign up with your email and get 10 free leads. No card needed.",
+      contactH: "Contact us", contactP: "Questions, or a plan for your team? Message us and we'll reply within one working day.",
+      emailL: "Email", waL: "WhatsApp", copy: "Copy", copied: "Copied",
+      privacy: "Privacy policy", terms: "Terms of service", refund: "Refund policy",
+      rights: "© 2026 Masar", note: "Mock-up: businesses and numbers shown are examples.",
+      gcc: "GCC", me: "Middle East", jordan: "Jordan",
+      app: {
+        items: ["New search", "History", "Reports", "Settings"], left: "Leads left", plan: "Weekly plan · renews Sunday",
+        title: "Specialty coffee shops", chips: ["Amman", "Riyadh", "Dubai"], extra: ["Independent only", "40 leads"],
+        head: ["Business", "City", "Closing chance", "Score", "Status"],
+        rows: [["Rafeeq Roastery", "Jabal Al-Weibdeh · opened 4 months ago", "Amman", 91, "meet"], ["Qahwat Al Wadi", "Hiring baristas · 2 branches", "Riyadh", 86, "new"], ["Sanad Coffee Lab", "New menu launched last week", "Dubai", 82, "won"], ["Bait Al Bunn", "Owner answers on WhatsApp", "Amman", 77, "new"], ["Marsa Café", "Third branch opening soon", "Riyadh", 71, "new"], ["Hijaz Brew Bar", "Reviews mention slow service", "Jeddah", 64, "new"]],
+        status: { new: "New", meet: "Meeting", won: "Won" },
+        phoneLeft: "86 leads left", call: "Call", wa: "WhatsApp", tabs: ["Search", "Leads", "History", "Account"]
+      }
+    }
+  };
+  const CITY = {
+    amman: ["عمّان", "Amman", 35.93, 31.95, "home"], zarqa: ["الزرقاء", "Zarqa", 36.09, 32.07, "local"], salt: ["السلط", "As-Salt", 35.73, 32.04, "local"], madaba: ["مادبا", "Madaba", 35.79, 31.72, "local"],
+    irbid: ["إربد", "Irbid", 35.85, 32.55, "jo"], mafraq: ["المفرق", "Mafraq", 36.21, 32.34, "jo"], karak: ["الكرك", "Karak", 35.7, 31.18, "jo"], maan: ["معان", "Ma'an", 35.73, 30.19, "jo"], aqaba: ["العقبة", "Aqaba", 35.0, 29.53, "jo"],
+    riyadh: ["الرياض", "Riyadh", 46.72, 24.71, "gcc"], jeddah: ["جدة", "Jeddah", 39.19, 21.49, "gcc"], dammam: ["الدمام", "Dammam", 50.1, 26.43, "gcc"], kuwait: ["الكويت", "Kuwait", 47.98, 29.37, "gcc"],
+    manama: ["المنامة", "Manama", 50.58, 26.23, "gcc"], doha: ["الدوحة", "Doha", 51.53, 25.29, "gcc"], abudhabi: ["أبوظبي", "Abu Dhabi", 54.37, 24.45, "gcc"], dubai: ["دبي", "Dubai", 55.27, 25.2, "gcc"], muscat: ["مسقط", "Muscat", 58.4, 23.6, "gcc"],
+    cairo: ["القاهرة", "Cairo", 31.24, 30.04, "me"], beirut: ["بيروت", "Beirut", 35.5, 33.89, "me"], damascus: ["دمشق", "Damascus", 36.29, 33.51, "me"], baghdad: ["بغداد", "Baghdad", 44.36, 33.31, "me"]
+  };
+  // Label offsets in screen px [dx, dy] so close neighbours don't collide
+  const NUDGE = { manama: [0, -12], doha: [0, 14], abudhabi: [0, 15], dubai: [0, -6], kuwait: [0, -4], dammam: [0, -12], zarqa: [0, -6], salt: [0, -10], madaba: [0, 14], beirut: [0, -8] };
+
+  let lang = "ar";
+  try { lang = localStorage.getItem("masar-lang") === "en" ? "en" : "ar"; } catch (e) {}
+
+  function renderApp(t) {
+    const a = t.app;
+    const mark = '<svg viewBox="0 0 96 96" width="22" height="22" aria-hidden="true"><path d="M25 67V34c0-5 4-9 9-9h10c5 0 9 4 9 9v12c0 5 4 9 9 9h9" fill="none" stroke="#FAF8F3" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="74" cy="55" r="8" fill="#72B7A7"/></svg>';
+    $("#desk").innerHTML =
+      '<aside class="side"><div class="s-brand">' + mark + 'masar</div>' +
+      a.items.map((x, i) => '<span class="item' + (i ? "" : " on") + '">' + ["◎", "↺", "▤", "⚙"][i] + " " + x + "</span>").join("") +
+      '<div class="credits">' + a.left + "<b>86</b>" + a.plan + "</div></aside>" +
+      '<div class="work"><div class="brief"><h3>' + a.title + "</h3>" + a.chips.map((c) => '<span class="chip t">' + c + "</span>").join("") + a.extra.map((c) => '<span class="chip">' + c + "</span>").join("") + "</div>" +
+      '<div class="table"><div class="tr head">' + a.head.map((h) => "<span>" + h + "</span>").join("") + "</div>" +
+      a.rows.map((r, i) => '<div class="tr" data-row="' + i + '"><span class="nm"><b>' + r[0] + "</b><span>" + r[1] + "</span></span><span>" + r[2] + '</span><span class="bar"><i style="width:' + r[3] + '%"></i></span><span class="score">' + r[3] + '</span><span class="st ' + r[4] + '">' + a.status[r[4]] + "</span></div>").join("") +
+      "</div></div>";
+    $("#screen").innerHTML =
+      '<div class="p-top"><b>masar</b><span>' + a.phoneLeft + '</span></div><div class="p-list">' +
+      a.rows.slice(0, 4).map((r) => '<div class="p-card"><b>' + r[0] + "</b><small>" + r[2] + " · " + a.status[r[4]] + '</small><span class="ring" style="--p:' + r[3] + '%"><span>' + r[3] + '</span></span><div class="p-act"><span class="go">' + a.call + "</span><span>" + a.wa + "</span></div></div>").join("") +
+      '</div><div class="p-tabs">' + a.tabs.map((x, i) => "<span" + (i ? "" : ' class="on"') + ">" + x + "</span>").join("") + "</div>";
+  }
+
+  function applyLang() {
+    const t = T[lang];
+    root.lang = lang;
+    root.dir = lang === "ar" ? "rtl" : "ltr";
+    $$("[data-t]").forEach((el) => { el.textContent = t[el.dataset.t]; });
+    $$("[data-h]").forEach((el) => { el.innerHTML = t[el.dataset.h]; });
+    renderApp(t);
+    if (mapReady) labelMap();
+    if (sheetKind) openSheet(sheetKind);
+  }
+
+  /* Copy buttons */
+  $$("[data-copy]").forEach((b) => b.addEventListener("click", () => {
+    const el = document.getElementById(b.dataset.copy);
+    const done = () => { b.textContent = T[lang].copied; setTimeout(() => { b.textContent = T[lang].copy; }, 1600); };
+    const select = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(el.textContent.trim()).then(done, select); } catch (e) { select(); }
+  }));
+
+  /* ================= Download sheet ================= */
+  const ICON = {
+    mac: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C6.9 7.4 5.4 8.3 4.6 9.7c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 3 2.4 1.2 0 1.6-.8 3.1-.8s1.8.8 3.1.8c1.3 0 2.1-1.2 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7 0 0-2.7-1-2.8-4.1zM14 5.6c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>',
+    win: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>',
+    lin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c-2.2 0-3.3 1.8-3.3 4.2 0 1.5-.4 2.6-1.3 3.9C6.2 12.8 5 14.6 5 16.6c0 .7.2 1.3.5 1.8"/><path d="M12 3c2.2 0 3.3 1.8 3.3 4.2 0 1.5.4 2.6 1.3 3.9 1.2 1.7 2.4 3.5 2.4 5.5 0 .7-.2 1.3-.5 1.8"/><path d="M5.5 18.4c.9 1.4 2.8 1.1 3.6 2.1.6.8 1.6 1 2.9 1s2.3-.2 2.9-1c.8-1 2.7-.7 3.6-2.1"/><circle cx="10.4" cy="7.6" r=".7" fill="currentColor"/><circle cx="13.6" cy="7.6" r=".7" fill="currentColor"/><path d="M10.8 9.6 12 10.6l1.2-1"/></svg>',
+    iph: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+    and: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 16V10a6 6 0 0 1 12 0v6z"/><path d="M8 4.5 9.2 6.3M16 4.5l-1.2 1.8M6 16h12v2.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 18.5z"/><circle cx="9.8" cy="10.5" r=".6" fill="currentColor"/><circle cx="14.2" cy="10.5" r=".6" fill="currentColor"/></svg>'
+  };
+  const ua = navigator.userAgent;
+  const myOS = /iPhone|iPad|iPod/.test(ua) ? "iph" : /Android/.test(ua) ? "and" : /Mac/.test(ua) ? "mac" : /Win/.test(ua) ? "win" : /Linux/.test(ua) ? "lin" : "";
+  let sheetKind = "";
+  function openSheet(kind) {
+    sheetKind = kind;
+    const t = T[lang], list = kind === "desktop" ? ["mac", "win", "lin"] : ["iph", "and"];
+    $("#sheetTitle").textContent = kind === "desktop" ? t.shDesk : t.shMob;
+    $("#sheetSub").textContent = kind === "desktop" ? t.shDeskP : t.shMobP;
+    $("#sheetOpts").innerHTML = list.map((k) =>
+      '<div class="opt' + (k === myOS ? " mine" : "") + '"><span class="oi">' + ICON[k] + '</span><span class="ot"><b>' + t[k] + "</b><small>" + t[k + "S"] + "</small>" + (k === myOS ? '<span class="tagmine">' + t.yours + "</span>" : "") +
+      '</span><button class="btn ' + (k === myOS ? "mint" : "") + '" type="button" data-os="' + k + '">' + t.download + "</button></div>").join("");
+    $("#sheetMore").innerHTML = "";
+    $$("#sheetOpts [data-os]").forEach((b) => b.addEventListener("click", () => {
+      location.href = "/download?os=" + b.dataset.os;
+    }));
+    $("#sheetBg").classList.add("open");
+    $("#sheetX").focus();
+  }
+  function closeSheet() { sheetKind = ""; $("#sheetBg").classList.remove("open"); }
+  $$("[data-sheet]").forEach((b) => b.addEventListener("click", () => openSheet(b.dataset.sheet)));
+  $("#sheetX").addEventListener("click", closeSheet);
+  $("#sheetBg").addEventListener("click", (e) => { if (e.target.id === "sheetBg") closeSheet(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheetKind) closeSheet(); });
+
+  /* ================= Map (vector, drawn here) ================= */
+  // Mercator matching the country paths in map.json: centre 43E 25N at (800, 560), scale 2180.
+  const K = 2180, L0 = 43 * Math.PI / 180, Y0 = Math.log(Math.tan(Math.PI / 4 + (25 * Math.PI / 180) / 2));
+  const P = (lon, lat) => [800 + K * (lon * Math.PI / 180 - L0), 560 - K * (Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2)) - Y0)];
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = $("#mapsvg");
+  const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  function smooth(pts) { // Catmull-Rom through points
+    let d = "M" + pts[0][0].toFixed(1) + " " + pts[0][1].toFixed(1);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += "C" + c1.map((v) => v.toFixed(1)).join(" ") + " " + c2.map((v) => v.toFixed(1)).join(" ") + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1);
+    }
+    return d;
+  }
+  const C = (k) => P(CITY[k][2], CITY[k][3]);
+  // Main road corridors as lon/lat waypoints; second item marks a minor road
+  const ROADS = [
+    [[[35.93, 31.95], [36.09, 32.07], [36.21, 32.34], [36.0, 32.56], [35.85, 32.55]]],
+    [[[35.93, 31.95], [35.73, 32.04], [35.6, 32.0]], 1],
+    [[[35.93, 31.95], [35.79, 31.72], [35.7, 31.18], [35.6, 30.84], [35.73, 30.19]], 1],
+    [[[35.93, 31.95], [36.0, 31.6], [36.04, 31.25], [35.9, 30.7], [35.73, 30.19], [35.4, 29.8], [35.0, 29.53]]],
+    [[[36.21, 32.34], [37.13, 32.2], [38.2, 32.5], [39.3, 32.6], [40.28, 33.04], [42.5, 33.4], [44.36, 33.31]]],
+    [[[35.93, 31.95], [36.4, 31.85], [36.82, 31.83], [37.47, 31.5], [38.3, 30.9], [40.2, 29.97], [41.69, 27.52], [43.97, 26.33], [46.72, 24.71]]],
+    [[[35.73, 30.19], [36.0, 29.32], [36.57, 28.38], [37.9, 26.4], [39.61, 24.47], [39.3, 22.6], [39.19, 21.49]]],
+    [[[39.19, 21.49], [39.83, 21.42], [42.4, 22.9], [44.8, 24.0], [46.72, 24.71]]],
+    [[[46.72, 24.71], [48.2, 25.4], [49.5, 26.0], [50.1, 26.43]]],
+    [[[50.1, 26.43], [50.58, 26.23]], 1],
+    [[[50.1, 26.43], [49.6, 27.0], [48.6, 28.2], [47.98, 29.37], [47.8, 30.5], [46.3, 31.8], [44.36, 33.31]]],
+    [[[46.72, 24.71], [49.2, 24.9], [50.84, 24.74], [51.2, 25.0], [51.53, 25.29]]],
+    [[[50.84, 24.74], [52.4, 24.1], [54.37, 24.45], [54.9, 24.9], [55.27, 25.2]]],
+    [[[55.27, 25.2], [55.76, 24.21], [56.7, 24.35], [57.6, 23.8], [58.4, 23.6]]],
+    [[[36.29, 33.51], [36.1, 32.62], [36.0, 32.56]]],
+    [[[36.29, 33.51], [35.9, 33.7], [35.5, 33.89]], 1],
+    [[[36.29, 33.51], [38.3, 34.0], [40.28, 33.04]], 1],
+    [[[35.0, 29.53], [34.7, 29.4], [33.75, 29.9], [32.55, 29.97], [31.24, 30.04]], 1]
+  ];
+  const DEAD_SEA = [[35.45, 31.77], [35.57, 31.75], [35.6, 31.5], [35.55, 31.2], [35.47, 31.03], [35.39, 31.12], [35.4, 31.45]];
+  const GCC_ROUTES = ["riyadh", "jeddah", "dammam", "kuwait", "manama", "doha", "abudhabi", "dubai", "muscat"];
+
+  let mapReady = false, routes = [], labels = [], bigLabels = [], pings = [];
+  let view = { cx: 800, cy: 560, s: 1 }, routeDraw = 0;
+
+  function buildMap(data) {
+    svg.innerHTML = "";
+    const defs = mk("defs", {}, svg), rg = mk("radialGradient", { id: "cityGlow" }, defs);
+    mk("stop", { offset: "0", "stop-color": "#72b7a7", "stop-opacity": "0.32" }, rg); mk("stop", { offset: "1", "stop-color": "#72b7a7", "stop-opacity": "0" }, rg);
+    const g = mk("g", {}, svg);
+    let gd = "";
+    for (let lon = 15; lon <= 70; lon += 5) { const a = P(lon, 5), b = P(lon, 45); gd += "M" + a[0].toFixed(1) + " " + a[1].toFixed(1) + "V" + b[1].toFixed(1); }
+    for (let lat = 5; lat <= 45; lat += 5) { const a = P(15, lat), b = P(70, lat); gd += "M" + a[0].toFixed(1) + " " + a[1].toFixed(1) + "H" + b[0].toFixed(1); }
+    mk("path", { class: "grat", d: gd }, g);
+    data.countries.forEach((c) => mk("path", { class: "c " + c.cls, d: c.d }, g));
+    mk("path", { class: "lake", d: "M" + DEAD_SEA.map((p) => P(p[0], p[1]).map((v) => v.toFixed(1)).join(" ")).join("L") + "Z" }, g);
+    Object.keys(CITY).forEach((k) => { const [x, y] = C(k), t = CITY[k][4]; mk("circle", { cx: x, cy: y, r: t === "home" ? 7 : t === "local" ? 2.6 : t === "jo" ? 3.2 : 9, fill: "url(#cityGlow)" }, g); });
+    ROADS.forEach(([pts, minor]) => mk("path", { class: "road" + (minor ? " minor" : ""), d: smooth(pts.map((p) => P(p[0], p[1]))) }, g));
+    const gr = mk("g", {}, g);
+    routes = GCC_ROUTES.map((k) => {
+      const a = C("amman"), b = C(k), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1];
+      const d = "M" + a[0].toFixed(1) + " " + a[1].toFixed(1) + "Q" + (mx + dy * 0.18).toFixed(1) + " " + (my - dx * 0.18).toFixed(1) + " " + b[0].toFixed(1) + " " + b[1].toFixed(1);
+      const glow = mk("path", { class: "route-glow", d }, gr), line = mk("path", { class: "route", d }, gr);
+      const len = line.getTotalLength();
+      [glow, line].forEach((p) => { p.style.strokeDasharray = len; p.style.strokeDashoffset = len; });
+      return { glow, line, len };
+    });
+    const gDots = mk("g", {}, g), gLabels = mk("g", {}, g);
+    pings = [];
+    labels = Object.keys(CITY).map((k) => {
+      const [x, y] = C(k), tier = CITY[k][4];
+      if (tier === "home") pings.push(mk("circle", { class: "ping", cx: x, cy: y }, gDots));
+      const dot = mk("circle", { class: "dot" + (tier === "home" ? " home" : ""), cx: x, cy: y }, gDots);
+      const text = mk("text", { class: tier === "home" ? "home" : "" }, gLabels);
+      return { k, x, y, tier, dot, text };
+    });
+    bigLabels = [
+      { key: "jordan", ll: [37.3, 30.9], tier: "bigjo" },
+      { key: "gcc", ll: [51.5, 21.2], tier: "biggcc" },
+      { key: "me", ll: [40.5, 35.6], tier: "bigme" }
+    ].map((b) => { const [x, y] = P(b.ll[0], b.ll[1]); return { ...b, x, y, text: mk("text", { class: "big", "text-anchor": "middle" }, gLabels) }; });
+    mapReady = true;
+    labelMap();
+  }
+  function labelMap() {
+    const i = lang === "ar" ? 0 : 1;
+    labels.forEach((l) => { l.text.textContent = CITY[l.k][i]; });
+    bigLabels.forEach((b) => { b.text.textContent = T[lang][b.key]; });
+    drawMap();
+  }
+
+  // Label visibility by zoom (s = screen px per map unit): 1 inside [lo, hi], fading outside
+  const band = (s, lo, hi) => { const f = (v) => Math.max(0, Math.min(1, v)); return f(Math.log(s / (lo / 1.5)) / Math.log(1.5)) * f(Math.log((hi * 1.5) / s) / Math.log(1.5)); };
+  const TIERS = { home: [0, 1e9], local: [7, 1e9], jo: [2.6, 1e9], gcc: [0, 1.7], me: [0, 1.7], bigjo: [2.2, 7.5], biggcc: [0, 1.5], bigme: [0, 1.5] };
+
+  function drawMap() {
+    if (!mapReady) return;
+    const W = innerWidth, H = innerHeight, s = view.s, a = avail(), u = 1 / s, rtl = lang === "ar";
+    svg.setAttribute("viewBox", [view.cx - (a.x + a.w / 2) / s, view.cy - (a.y + a.h / 2) / s, W / s, H / s].map((v) => v.toFixed(3)).join(" "));
+    labels.forEach((l) => {
+      const o = band(s, ...TIERS[l.tier]), home = l.tier === "home", n = NUDGE[l.k] || [0, 0];
+      l.dot.setAttribute("r", ((home ? 5 : 3.2) * u).toFixed(3));
+      l.dot.style.opacity = home ? 1 : o;
+      l.text.setAttribute("font-size", ((home ? 15 : 12.5) * u).toFixed(3));
+      l.text.setAttribute("stroke-width", (3 * u).toFixed(3));
+      l.text.setAttribute("text-anchor", rtl ? "end" : "start");
+      l.text.setAttribute("x", (l.x + (rtl ? -9 : 9) * u).toFixed(3));
+      l.text.setAttribute("y", (l.y + (4.5 + n[1]) * u).toFixed(3));
+      l.text.style.opacity = o;
+    });
+    pings.forEach((p) => p.setAttribute("stroke-width", (1.5 * u).toFixed(3)));
+    bigLabels.forEach((b) => {
+      b.text.setAttribute("font-size", ((b.key === "jordan" ? 30 : 26) * u).toFixed(3));
+      b.text.setAttribute("stroke-width", (4 * u).toFixed(3));
+      b.text.setAttribute("x", b.x.toFixed(2)); b.text.setAttribute("y", b.y.toFixed(2));
+      b.text.style.opacity = band(s, ...TIERS[b.tier]);
+    });
+    routes.forEach((r, i) => {
+      const f = Math.max(0, Math.min(1, routeDraw * 1.6 - i * 0.07));
+      r.line.setAttribute("stroke-width", (2 * u).toFixed(3));
+      r.glow.setAttribute("stroke-width", (7 * u).toFixed(3));
+      r.line.style.strokeDashoffset = r.glow.style.strokeDashoffset = (r.len * (1 - f)).toFixed(2);
+    });
+  }
+  // Free screen area for the map: the text takes the start side on wide screens and the bottom on phones
+  function avail() {
+    const W = innerWidth, H = innerHeight;
+    if (W < 760) return { x: 0, y: 70, w: W, h: H * 0.46 };
+    const panel = Math.min(520, W * 0.42);
+    return lang === "ar" ? { x: 0, y: 60, w: W - panel, h: H - 100 } : { x: panel, y: 60, w: W - panel, h: H - 100 };
+  }
+  function fitBox(lon0, lat0, lon1, lat1) {
+    const a = P(lon0, lat1), b = P(lon1, lat0), A = avail();
+    return { cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2, s: Math.min(A.w / (b[0] - a[0]), A.h / (b[1] - a[1])) };
+  }
+  const STAGES = () => [fitBox(35.62, 31.68, 36.3, 32.2), fitBox(34.8, 29.2, 39.4, 33.5), fitBox(33.5, 20.5, 59.5, 33.3)];
+  const easeIO = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  // z in [0, 2]: one camera move between stages (log scale, centre follows the zoom)
+  function setZoom(z) {
+    const st = STAGES(), i = Math.min(1, Math.floor(z)), f = easeIO(Math.min(1, Math.max(0, z - i)));
+    const A = st[i], B = st[i + 1], s = Math.exp(Math.log(A.s) + (Math.log(B.s) - Math.log(A.s)) * f);
+    const g = Math.abs(1 / B.s - 1 / A.s) < 1e-9 ? f : (1 / s - 1 / A.s) / (1 / B.s - 1 / A.s);
+    view = { cx: A.cx + (B.cx - A.cx) * g, cy: A.cy + (B.cy - A.cy) * g, s };
+    drawMap();
+  }
+
+  /* ================= Scroll story ================= */
+  const fitDesk = () => Math.min((innerWidth - 32) / 1100, (innerHeight * 0.56) / 640, 1);
+  root.style.setProperty("--fit", fitDesk().toFixed(3));
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const motion = !reduce && gsap && window.ScrollTrigger;
+  if (motion) { root.classList.add("motion"); gsap.registerPlugin(ScrollTrigger); }
+
+  applyLang();
+  let zoomNow = motion ? 0 : 2;
+  fetch("/app/map.json").then((r) => r.json()).then((d) => { buildMap(d); setZoom(zoomNow); }).catch(() => {});
+
+  $("#langBtn").addEventListener("click", () => {
+    lang = lang === "ar" ? "en" : "ar";
+    try { localStorage.setItem("masar-lang", lang); } catch (e) {}
+    applyLang();
+    if (motion) { const y = scrollY; build(); scrollTo(0, y); } else setZoom(2);
+  });
+
+  if (!motion) {
+    addEventListener("resize", () => { root.style.setProperty("--fit", fitDesk().toFixed(3)); if (mapReady) setZoom(2); });
+    return;
+  }
+
+  // The logo draws itself once on load
+  const stroke = $("#logoHero .stroke"), SL = stroke.getTotalLength();
+  gsap.set(stroke, { strokeDasharray: SL, strokeDashoffset: SL });
+  gsap.set("#logoHero .dot", { scale: 0, transformOrigin: "50% 50%" });
+  gsap.set("#logoHero svg", { scale: 0.72, autoAlpha: 0, transformOrigin: "50% 50%" });
+  gsap.set("#lockup", { autoAlpha: 0, y: 14 });
+  gsap.timeline({ delay: 0.15 })
+    .to("#logoHero svg", { scale: 1, autoAlpha: 1, duration: 0.8, ease: "power3.out" })
+    .to(stroke, { strokeDashoffset: 0, duration: 1.3, ease: "power2.inOut" }, "-=0.3")
+    .to("#logoHero .dot", { scale: 1, duration: 0.55, ease: "back.out(2.6)" }, "-=0.2")
+    .to("#lockup", { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, "-=0.25");
+
+  let tlIntro, tlMap;
+  function build() {
+    [tlIntro, tlMap].forEach((t) => { if (t) { if (t.scrollTrigger) t.scrollTrigger.kill(); t.progress(0).kill(); } });
+    const W = innerWidth, H = innerHeight, mobile = W < 760, rtl = lang === "ar", dir = rtl ? -1 : 1, s = fitDesk();
+    root.style.setProperty("--fit", s.toFixed(3));
+
+    /* --- Intro --- */
+    gsap.set("#logoHero", { clearProps: "transform,opacity,visibility" });
+    gsap.set(["#navMark", "#navWord"], { autoAlpha: 0 });
+    // Land the big logo exactly on the bar's logo
+    const big = $("#logoHero").getBoundingClientRect(), nav = $("#navMark").getBoundingClientRect();
+    const dock = { x: nav.left + nav.width / 2 - (big.left + big.width / 2), y: nav.top + nav.height / 2 - (big.top + big.height / 2), scale: nav.width / big.width };
+    gsap.set("#heroCopy", { autoAlpha: 0, y: 30 });
+    gsap.set("#desk", { scale: s, y: H + 40, x: 0, top: mobile ? H * 0.47 : H * 0.36 });
+    const phoneScale = mobile ? Math.min(0.8, (H * 0.6) / 600) : Math.min(1, (H * 0.64) / 600);
+    gsap.set("#phone", { top: mobile ? H * 0.3 : H * 0.29, x: mobile ? 0 : -dir * Math.min(420, W * 0.27), y: H, rotate: dir * 5, scale: phoneScale });
+    gsap.set("#cursor", { autoAlpha: 0 });
+    gsap.set(["#capDesk", "#capPhone"], { autoAlpha: 0, y: 12 });
+    $$("#desk .tr.hot").forEach((r) => r.classList.remove("hot"));
+    const scoreCell = () => $('#desk [data-row="0"] .score').getBoundingClientRect();
+
+    tlIntro = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: ".intro", start: "top top", end: "bottom bottom", scrub: 0.35, invalidateOnRefresh: true } });
+    tlIntro
+      .fromTo("#hint", { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.3, immediateRender: false }, 0)
+      .fromTo("#lockup", { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -10, duration: 0.6, immediateRender: false }, 0)
+      .to("#logoHero", { x: dock.x, y: dock.y, scale: dock.scale, duration: 1.6, ease: "power3.inOut" }, 0.1)
+      .set("#navMark", { autoAlpha: 1 }, 1.7)
+      .set("#logoHero", { autoAlpha: 0 }, 1.7)
+      .to("#navWord", { autoAlpha: 1, duration: 0.4 }, 1.6)
+      .to("#heroCopy", { autoAlpha: 1, y: 0, duration: 0.9, ease: "power2.out" }, 1.5)
+      .to("#desk", { y: 0, duration: 1.6, ease: "power3.out" }, 2.4)
+      .to("#capDesk", { autoAlpha: 1, y: 0, duration: 0.5 }, 3.4)
+      .fromTo("#cursor", { autoAlpha: 0, x: W * (rtl ? 0.3 : 0.7), y: H * 0.98 },
+        { autoAlpha: 1, duration: 1, x: () => scoreCell().left + scoreCell().width / 2, y: () => scoreCell().top + scoreCell().height / 2 }, 4.1)
+      .call(() => { const r = $('#desk [data-row="0"]'); if (r) r.classList.toggle("hot", tlIntro.scrollTrigger.direction > 0); }, null, 5.1)
+      .to("#cursor", { autoAlpha: 0, duration: 0.3 }, 5.6)
+      .to("#capDesk", { autoAlpha: 0, duration: 0.4 }, 5.6)
+      .to("#heroCopy", { autoAlpha: mobile ? 0 : 0.3, duration: 0.8 }, 5.6)
+      .to("#desk", mobile ? { autoAlpha: 0.15, scale: s * 0.94, duration: 1.2 } : { x: dir * W * 0.11, scale: s * 0.86, duration: 1.2, ease: "power2.inOut" }, 5.6)
+      .to("#phone", { y: mobile ? -H * 0.02 : -H * 0.05, rotate: 0, duration: 1.5, ease: "power3.out" }, 5.8)
+      .to("#capPhone", { autoAlpha: 1, y: 0, duration: 0.5 }, 6.8)
+      .to({}, { duration: 0.3 });
+
+    /* --- Map --- */
+    const steps = $$(".step"), bars = $$(".progress i");
+    gsap.set(steps, { autoAlpha: 0, y: 24, yPercent: mobile ? 0 : -50 });
+    const z = { v: 0 }, rd = { v: 0 };
+    routeDraw = 0; zoomNow = 0; setZoom(0);
+    tlMap = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: {
+      trigger: ".mapsec", start: "top top", end: "bottom bottom", scrub: 0.35,
+      onUpdate: (st) => { const i = st.progress < 0.36 ? 0 : st.progress < 0.68 ? 1 : 2; bars.forEach((b, k) => b.classList.toggle("on", k === i)); svg.dataset.stage = i; }
+    } });
+    tlMap
+      .to(steps[0], { autoAlpha: 1, y: 0, duration: 0.5 }, 0.2)
+      .to(steps[0], { autoAlpha: 0, y: -24, duration: 0.4 }, 2.1)
+      .to(z, { v: 1, duration: 1.6, onUpdate: () => { zoomNow = z.v; setZoom(z.v); } }, 2.2)
+      .to(steps[1], { autoAlpha: 1, y: 0, duration: 0.5 }, 3.4)
+      .to(steps[1], { autoAlpha: 0, y: -24, duration: 0.4 }, 5)
+      .to(z, { v: 2, duration: 1.7, onUpdate: () => { zoomNow = z.v; setZoom(z.v); } }, 5.1)
+      .to(steps[2], { autoAlpha: 1, y: 0, duration: 0.5 }, 6.4)
+      .to(rd, { v: 1, duration: 1.3, onUpdate: () => { routeDraw = rd.v; drawMap(); } }, 6.5)
+      .to({}, { duration: 0.3 });
+    ScrollTrigger.refresh();
+  }
+  build();
+
+  /* Clicking the logo glides back to the top, so the logo flies back to the middle */
+  let backRaf = 0;
+  $$('a.brand[href="#top"]').forEach((a) => a.addEventListener("click", (e) => {
+    e.preventDefault();
+    cancelAnimationFrame(backRaf);
+    const from = scrollY;
+    if (!from) return;
+    if (!motion) { scrollTo(0, 0); return; }
+    const dur = Math.min(1400, 500 + from / 12), t0 = performance.now();
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const tick = (now) => { const t = Math.min(1, (now - t0) / dur); scrollTo(0, from * (1 - ease(t))); if (t < 1) backRaf = requestAnimationFrame(tick); };
+    backRaf = requestAnimationFrame(tick);
+  }));
+  ["wheel", "touchstart"].forEach((ev) => addEventListener(ev, () => cancelAnimationFrame(backRaf), { passive: true }));
+
+  // Pulse on Amman
+  gsap.to({ t: 0 }, { t: 1, duration: 2.2, repeat: -1, ease: "power1.out", onUpdate: function () {
+    const t = this.targets()[0].t, u = 1 / view.s;
+    pings.forEach((p) => { p.setAttribute("r", ((5 + t * 22) * u).toFixed(3)); p.style.opacity = (1 - t).toFixed(2); });
+  } });
+
+  let rt;
+  addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { const y = scrollY; build(); scrollTo(0, y); setZoom(zoomNow); }, 200); });
+})();
+</script>
+</body>
+</html>
