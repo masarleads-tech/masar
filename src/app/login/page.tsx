@@ -42,8 +42,8 @@ export default function Login() {
           {signup && <p className="w-full rounded-[10px] bg-teal-100 p-3 text-center text-sm font-semibold text-teal-800">{t.signUpPitch}</p>}
           {config && !config.accountsEnabled && <p className="text-muted text-sm">Accounts are switched off on this copy of Masar.</p>}
           {config?.accountsEnabled && (signup
-            ? <SignUp routing="hash" signInUrl="/login" forceRedirectUrl="/welcome" />
-            : <SignIn routing="hash" signUpUrl="/login?mode=signup" fallbackRedirectUrl="/dashboard" />)}
+            ? <SignUp routing="hash" signInUrl="/login" forceRedirectUrl="/dashboard" />
+            : <SignIn routing="hash" signUpUrl="/login?mode=signup" forceRedirectUrl="/dashboard" />)}
           <p className="text-muted text-center text-xs">
             {signup && `${t.agree} `}
             <a href="/legal/terms" target="_blank" className="underline">{t.legalTerms}</a> · <a href="/legal/privacy" target="_blank" className="underline">{t.legalPrivacy}</a>

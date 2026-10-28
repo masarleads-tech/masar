@@ -105,7 +105,7 @@ export function AppShell({ t, lang, config, active, onLang, onNav, onKeys, child
     if (k === "admin") location.href = "/admin";
     else if (k === "history") location.href = "/history";
     else if (onNav) onNav(k);
-    else location.href = k === "results" ? "/?view=results" : "/";
+    else location.href = k === "results" ? "/?view=results" : "/?new=1";
   };
 
   const footer = (

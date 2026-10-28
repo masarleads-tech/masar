@@ -2,13 +2,20 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { accountsEnabled } from "@/lib/supabase/env";
 
-/** Visitors who are not signed in see the scroll-story home page at "/"; members get the app there. */
+/** Visitors who are not signed in see the scroll-story home page at "/". */
 const story = (req: NextRequest) => NextResponse.rewrite(new URL("/home", req.url));
 
+/**
+ * Signed-in members always land on their own dashboard: from "/" and from the log-in page.
+ * The dashboard sends new members through the setup tour first. The search app stays at "/" with
+ * a query (?new=1, ?search=…, ?view=results).
+ */
 const clerk = clerkMiddleware(async (auth, req) => {
-  if (req.nextUrl.pathname !== "/") return;
+  const { pathname, search } = req.nextUrl;
+  if (pathname !== "/" && pathname !== "/login") return;
   const { userId } = await auth();
-  if (!userId) return story(req);
+  if (!userId) return pathname === "/" ? story(req) : undefined;
+  if (pathname === "/login" || !search) return NextResponse.redirect(new URL("/dashboard", req.url));
 });
 
 /**

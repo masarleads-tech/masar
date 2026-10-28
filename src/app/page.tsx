@@ -62,7 +62,8 @@ export default function Home() {
     if (config.accountsEnabled) {
       if (!config.user) return;
       (async () => {
-        const id = wanted ?? (await latestSearchId());
+        // "?new=1" opens an empty search form instead of the latest search
+        const id = wanted ?? (q.has("new") ? null : await latestSearchId());
         const found = id ? await loadSearch(id) : null;
         if (found?.leads.length) {
           show(found.search.brief, found.leads, found.search.sources, found.search.id);

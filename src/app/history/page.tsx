@@ -38,14 +38,14 @@ export default function History() {
 
   return (
     <AppShell t={t} lang={lang} config={config} active="history" onLang={toggleLang}>
-      <PageHead title={t.navHistory} sub={t.historySub} actions={<a href="/" className="btn-primary">{t.newLeadsSearch}</a>} />
+      <PageHead title={t.navHistory} sub={t.historySub} actions={<a href="/?new=1" className="btn-primary">{t.newLeadsSearch}</a>} />
       <div className="space-y-3 p-4 sm:p-8">
         {error && <p className="rounded-[6px] bg-red-50 p-2.5 text-sm text-red-700">{t.errorPrefix} {error}</p>}
         {rows === null && <p className="text-muted text-sm">{t.loading}</p>}
         {rows?.length === 0 && !error && (
           <div className="card text-center">
             <p className="text-muted">{t.historyEmpty}</p>
-            <a href="/" className="btn-primary mt-4">{t.newLeadsSearch}</a>
+            <a href="/?new=1" className="btn-primary mt-4">{t.newLeadsSearch}</a>
           </div>
         )}
         {rows && rows.length > 0 && (
