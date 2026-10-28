@@ -220,5 +220,67 @@ grant execute on function public.admin_set_weekly(text, integer) to authenticate
 grant execute on function public.admin_add_credits(text, integer) to authenticated;
 grant execute on function public.admin_set_key(text, text) to authenticated;
 
--- Make yourself the admin AFTER you have signed up on the site (change the email):
---   update public.profiles set is_admin = true where email = 'you@example.com';
+
+-- ---------- Setup answers, goals and dashboard settings (one row per user) ----------
+-- Filled by the setup tour after sign-up and changed later from the dashboard.
+-- Username and email come from Clerk on the server, never from the browser.
+
+create table if not exists public.user_setup (
+  user_id text primary key references public.profiles (id) on delete cascade,
+  username text,
+  email text,
+  industries text[] not null default '{}',
+  ideal_customer text not null default '',
+  cities text[] not null default '{}',
+  leads_per_week integer not null default 50 check (leads_per_week between 1 and 10000),
+  meetings_per_month integer not null default 8 check (meetings_per_month between 0 and 1000),
+  deal_size numeric not null default 0 check (deal_size >= 0),
+  currency text not null default 'SAR',
+  close_rate integer not null default 10 check (close_rate between 0 and 100),
+  sales_cycle integer not null default 1 check (sales_cycle between 0 and 3),
+  connectors text[] not null default '{}',
+  features text[] not null default '{}',
+  setup_done boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.user_setup enable row level security;
+drop policy if exists "own setup" on public.user_setup;
+create policy "own setup" on public.user_setup for all
+  using (user_id = public.current_user_id()) with check (user_id = public.current_user_id());
+grant select, insert, update on public.user_setup to authenticated;
+
+-- Client lists the user imports (CSV) or creates by hand. Lists from Masar searches live in public.searches.
+create table if not exists public.client_lists (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.profiles (id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 200),
+  source text not null default 'manual' check (source in ('csv', 'manual')),
+  columns text[] not null default '{}',
+  rows jsonb not null default '[]',
+  row_count integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists client_lists_user_idx on public.client_lists (user_id, updated_at desc);
+alter table public.client_lists enable row level security;
+drop policy if exists "own lists" on public.client_lists;
+create policy "own lists" on public.client_lists for all
+  using (user_id = public.current_user_id()) with check (user_id = public.current_user_id());
+grant select, insert, update, delete on public.client_lists to authenticated;
+
+-- Feedback from the small box at the end of the dashboard. Users can add, only admins can read.
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.profiles (id) on delete cascade,
+  rating integer check (rating between 1 and 5),
+  message text not null default '' check (char_length(message) <= 2000),
+  created_at timestamptz not null default now()
+);
+alter table public.feedback enable row level security;
+drop policy if exists "add own feedback" on public.feedback;
+create policy "add own feedback" on public.feedback for insert with check (user_id = public.current_user_id());
+drop policy if exists "admins read feedback" on public.feedback;
+create policy "admins read feedback" on public.feedback for select
+  using (exists (select 1 from public.profiles where id = public.current_user_id() and is_admin));
+grant select, insert on public.feedback to authenticated;

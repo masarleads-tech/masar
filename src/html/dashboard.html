@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Masar Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="app.css">
+<style>
+.hello-line { color: var(--muted); margin: 4px 0 0; font-size: 14px; }
+.goals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.goal { padding: 16px; display: grid; gap: 10px; }
+.goal .g-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.goal .g-top b { font: 700 20px/1 var(--font-en); }
+.goal .g-top span { color: var(--muted); font-size: 13px; }
+.goal .g-edit { display: flex; align-items: center; gap: 10px; }
+.goal .g-edit input[type="range"] { flex: 1; }
+.goal .g-edit .num { min-width: 44px; text-align: center; color: var(--mint); font-weight: 700; }
+.expect { padding: 16px; display: grid; gap: 10px; grid-column: 1 / -1; }
+.expect-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .goals, .expect-row { grid-template-columns: 1fr; } }
+.conn-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.conn { padding: 16px; display: grid; gap: 12px; align-content: start; }
+.conn .c-top { display: flex; align-items: center; gap: 12px; }
+.conn .ci { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; font: 800 13px/1 var(--font-en); color: #fff; }
+.conn .c-name { flex: 1; min-width: 0; }
+.conn .c-name b { display: block; font-family: var(--font-en); }
+.conn p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.conn .c-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+@media (max-width: 1100px) { .conn-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .conn-grid { grid-template-columns: 1fr; } }
+.feats { overflow: hidden; }
+.feat { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.feat:first-child { border-top: 0; }
+.feat .f-t { flex: 1; min-width: 0; }
+.feat .f-t b { display: block; font-size: 14.5px; }
+.feat .f-t small { color: var(--muted); font-size: 13px; }
+.db-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.db-tools .search { position: relative; flex: 1; min-width: 200px; }
+.db-tools .search svg { position: absolute; inset-inline-start: 11px; top: 50%; translate: 0 -50%; width: 17px; height: 17px; color: var(--muted); }
+.db-tools .search .input { padding-inline-start: 36px; }
+.db-card { margin-top: 12px; overflow: hidden; }
+.db-detail td { background: rgba(255, 255, 255, 0.02); }
+.mini { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mini td, .mini th { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: start; }
+.mini th { color: var(--muted); font-weight: 600; }
+.row-act { display: flex; gap: 6px; justify-content: flex-end; }
+.confirm { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.fb { margin-top: 40px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.fb .fb-q { font-size: 14px; color: var(--muted); }
+.stars { display: flex; gap: 2px; }
+.stars button { width: 32px; height: 32px; border: 0; background: transparent; cursor: pointer; color: #3b4d4e; padding: 0; display: grid; place-items: center; transition: color 0.15s, transform 0.15s; }
+.stars button svg { width: 22px; height: 22px; }
+.stars button.on { color: var(--mint); }
+.stars button:hover { transform: scale(1.12); }
+.fb .input { flex: 1; min-width: 200px; min-height: 38px; }
+.fb .thanks { color: var(--mint); font-size: 14px; font-weight: 600; }
+.sample { font-size: 12px; color: var(--muted); margin-top: 18px; }
+@media (max-width: 860px) { .tabs-only { display: inline-flex !important; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidenav">
+    <a class="brand" href="/" id="brand" aria-label="Masar مسار"></a>
+    <nav id="sidelinks"></nav>
+    <div class="side-foot">
+      <button class="btn sm" type="button" data-lang-toggle data-t="langBtn"></button>
+      <a class="btn sm" href="/logout" data-t="logout"></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="hello"></h1>
+        <p class="hello-line" id="helloLine"></p>
+      </div>
+      <div class="tb-end">
+        <span class="badge" id="planBadge"></span>
+        <button class="btn sm tabs-only" type="button" data-lang-toggle data-t="langBtn" style="display:none"></button>
+        <a class="btn mint sm" href="#" id="newSearch" data-t="newSearch"></a>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <section class="sec" id="overview" style="margin-top:0">
+      <div class="tiles">
+        <div class="card tile"><small data-t="tWeek"></small><b class="num" id="vWeek"></b><span class="sub" id="sWeek"></span><div class="meter"><i id="mWeek"></i></div></div>
+        <div class="card tile"><small data-t="tMonth"></small><b class="num" id="vMonth"></b><span class="sub" id="sMonth"></span></div>
+        <div class="card tile"><small data-t="tTotal"></small><b class="num" id="vTotal"></b><span class="sub" data-t="sTotal"></span></div>
+        <div class="card tile"><small data-t="tLeft"></small><b class="num" id="vLeft"></b><span class="sub" id="sLeft"></span><div class="meter"><i id="mLeft"></i></div></div>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="card chart-card">
+          <div class="chart-top"><h3 data-t="usage"></h3><div class="seg" role="group"><button type="button" data-range="week" aria-pressed="true" data-t="rWeek"></button><button type="button" data-range="month" aria-pressed="false" data-t="rMonth"></button></div></div>
+          <div id="usageChart"></div>
+          <div class="legend"><span><i style="background:var(--teal-hi)"></i><span data-t="lgLeads"></span></span><span><i style="background:var(--warn);height:2px;vertical-align:3px"></i><span data-t="lgGoal"></span></span></div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-top"><h3 data-t="funnel"></h3></div>
+          <div id="funnel" style="display:grid;gap:12px;margin-top:6px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Goals -->
+    <section class="sec" id="goals">
+      <div class="sec-head"><div><span class="eyebrow" data-t="goalsE"></span><h2 data-t="goalsH"></h2><p data-t="goalsP"></p></div><button class="btn sm" type="button" id="saveGoals" data-t="save"></button></div>
+      <div class="goals">
+        <div class="card goal"><div class="g-top"><span data-t="gLeads"></span><b><span id="gLeadsNow" class="num"></span> <span>/ <span id="gLeadsT" class="num"></span></span></b></div><div class="meter"><i id="gLeadsM"></i></div><div class="g-edit"><input type="range" id="gLeads" min="10" max="200" step="10" data-al="gLeads"><span class="num" id="gLeadsV"></span></div></div>
+        <div class="card goal"><div class="g-top"><span data-t="gMeet"></span><b><span class="num" id="gMeetNow"></span> <span>/ <span id="gMeetT" class="num"></span></span></b></div><div class="meter"><i id="gMeetM"></i></div><div class="g-edit"><input type="range" id="gMeet" min="1" max="40" step="1" data-al="gMeet"><span class="num" id="gMeetV"></span></div></div>
+        <div class="card expect">
+          <b data-t="expH"></b>
+          <div class="expect-row">
+            <div class="field"><label for="eDeal" data-t="eDeal"></label><input class="input num" id="eDeal" type="number" min="0" inputmode="numeric"></div>
+            <div class="field"><label for="eRate" data-t="eRate"></label><select class="input" id="eRate"><option>5%</option><option>10%</option><option>15%</option><option>20%</option><option>30%</option></select></div>
+            <div class="field"><label for="eCycle" data-t="eCycle"></label><select class="input" id="eCycle"></select></div>
+          </div>
+          <p class="muted" style="margin:0;font-size:14px" id="forecast"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Connectors -->
+    <section class="sec" id="connectors">
+      <div class="sec-head"><div><span class="eyebrow" data-t="connE"></span><h2 data-t="connH"></h2><p data-t="connP"></p></div></div>
+      <div class="conn-grid" id="connGrid"></div>
+    </section>
+
+    <!-- Features -->
+    <section class="sec" id="features">
+      <div class="sec-head"><div><span class="eyebrow" data-t="featE"></span><h2 data-t="featH"></h2><p data-t="featP"></p></div></div>
+      <div class="card feats" id="feats"></div>
+    </section>
+
+    <!-- Databases -->
+    <section class="sec" id="databases">
+      <div class="sec-head"><div><span class="eyebrow" data-t="dbE"></span><h2 data-t="dbH"></h2><p data-t="dbP"></p></div></div>
+      <div class="db-tools">
+        <div class="search"><span id="searchIco"></span><input class="input" id="dbSearch" type="search" data-ph="dbSearch" data-al="dbSearch"></div>
+        <label class="btn sm" for="csv"><span id="upIco"></span><span data-t="import"></span></label>
+        <input type="file" id="csv" accept=".csv,text/csv" hidden>
+        <button class="btn sm mint" type="button" id="newDb"><span id="plusIco"></span><span data-t="newDb"></span></button>
+      </div>
+      <div class="card db-card tbl-wrap"><table class="tbl" id="dbTable"></table></div>
+    </section>
+
+    <!-- Feedback: small, at the end -->
+    <section class="card fb" id="feedback">
+      <span class="fb-q" data-t="fbQ"></span>
+      <div class="stars" id="stars"></div>
+      <input class="input" id="fbText" data-ph="fbPh" data-al="fbQ">
+      <button class="btn sm" type="button" id="fbSend" data-t="send"></button>
+    </section>
+  </main>
+</div>
+<nav class="tabs-m" id="tabs"></nav>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  const M = window.Masar, { $, $$ } = M;
+  const D = {
+    ar: {
+      langBtn: "English", logout: "تسجيل الخروج", hello: "أهلاً بك", plan: "الباقة الأسبوعية", newSearch: "بحث جديد",
+      nav: ["نظرة عامة", "الأهداف", "الموصلات", "الميزات", "قواعد البيانات"],
+      line: (n, l) => "عندك " + n + " عميل جديد هالأسبوع. باقي " + l + " عميل على هدفك.",
+      tWeek: "عملاء هالأسبوع", tMonth: "عملاء هالشهر", tTotal: "عملاء منّا لين الحين", tLeft: "رصيد الأسبوع", vsLast: "عن الشهر الماضي", sTotal: "من أول يوم سجلت", sLeft: "يتجدد الأحد",
+      ofGoal: (g) => "من هدف " + g,
+      usage: "استخدامك", rWeek: "أسبوع", rMonth: "شهر", lgLeads: "عملاء", lgGoal: "الهدف",
+      days: ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"], weeks: ["أسبوع 1", "أسبوع 2", "أسبوع 3", "أسبوع 4"],
+      funnel: "وين وصل عملاؤك هالشهر", stages: ["جديد", "تواصلت معهم", "اجتماع", "صفقة"],
+      goalsE: "الأهداف", goalsH: "أهدافك وتوقعاتك", goalsP: "عدّلها في أي وقت. نرتّب العملاء ونحسب تقدمك على أساسها.", save: "حفظ", saved: "تم الحفظ",
+      gLeads: "عملاء جدد بالأسبوع", gMeet: "اجتماعات بالشهر", expH: "توقعاتك", eDeal: "متوسط قيمة الصفقة", eRate: "نسبة الإغلاق المتوقعة", eCycle: "مدة الصفقة",
+      cycles: ["أقل من أسبوع", "2 إلى 4 أسابيع", "1 إلى 3 شهور", "أكثر من 3 شهور"],
+      forecast: (n, v, c) => "على هالأرقام، تتوقع " + n + " صفقة بالشهر بقيمة " + v + " " + c + " تقريباً.",
+      connE: "الموصلات", connH: "اربط أدواتك", connP: "خل العملاء يوصلون للمكان اللي تشتغل فيه.", connect: "ربط", disconnect: "فصل", on: "مربوط", off: "غير مربوط", connDone: "تم الربط", connOff: "تم الفصل",
+      conns: [["WhatsApp Business", "#25a366", "WA", "أرسل العملاء الساخنين لواتسابك أول ما يوصلون."], ["Gmail", "#c5483b", "G", "ابدأ المتابعة من إيميلك مع قالب جاهز."], ["Outlook", "#2b6cb0", "O", "نفس الشيء لو تستخدم مايكروسوفت."], ["Google Sheets", "#1e8e4f", "S", "كل عميل جديد ينضاف لجدولك تلقائياً."], ["HubSpot", "#e2683c", "H", "أضف العملاء والصفقات لنظام CRM."], ["Salesforce", "#1b8fd6", "SF", "مزامنة العملاء مع Salesforce."], ["Zoho CRM", "#d8473f", "Z", "مزامنة العملاء مع Zoho."], ["Webhook", "#4b5a5b", "{ }", "أرسل كل عميل لأي نظام عندك."]],
+      featE: "الميزات", featH: "شغّل اللي تحتاجه", featP: "كل ميزة تقدر تطفيها وتشغلها متى ما تبي.",
+      feats: [["بحث تلقائي كل أسبوع", "مسار يعيد بحثك كل أحد ويجيب عملاء جدد."], ["تنبيه للعملاء الساخنين", "رسالة واتساب لما يطلع عميل فرصته فوق 85."], ["ملخص يومي بالإيميل", "عملاء اليوم وتحديثات الصفقات كل صباح."], ["إثراء البيانات", "نضيف أرقام وإيميلات وحسابات التواصل لكل عميل."], ["استبعاد السلاسل الكبيرة", "نخفي الفروع والسلاسل العالمية من النتائج."], ["تصدير تلقائي", "أي عميل جديد يروح لجدول Google Sheets."], ["تقارير بالعربي", "التقارير والملخصات تطلع بالعربي."]],
+      featOn: "تم التشغيل", featOff: "تم الإيقاف",
+      dbE: "قواعد البيانات", dbH: "قواعد بيانات عملائك", dbP: "قوائم عملائك في مكان واحد. استورد من ملف CSV أو أنشئ قائمة جديدة.", dbSearch: "دوّر في القوائم", import: "استيراد CSV", newDb: "قائمة جديدة",
+      dbHead: ["القائمة", "عدد السجلات", "المصدر", "آخر تحديث", ""], open: "عرض", exportB: "تصدير", del: "حذف", sure: "متأكد؟", yes: "احذف", no: "لا",
+      srcMasar: "مسار", srcCsv: "ملف CSV", srcManual: "يدوي", srcHub: "HubSpot", today: "اليوم", newName: "قائمة جديدة", imported: (n, r) => "تم استيراد " + n + " (" + r + " سجل)", deleted: "تم الحذف", exported: "جاري تجهيز الملف", empty: "ما فيه قوائم تطابق بحثك.",
+      miniHead: ["الشركة", "المدينة", "الهاتف", "الحالة"],
+      fbQ: "كيف تجربتك مع مسار؟", fbPh: "اكتب ملاحظتك (اختياري)", send: "إرسال", thanks: "شكراً، وصلتنا ملاحظتك.", rate: "قيّم من 5",
+      planFree: "الباقة المجانية", tLeftFree: "رصيدك", firstLine: "ما عندك عملاء لين الحين. ابدأ أول بحث وتطلع أرقامك هنا.", last30: "آخر 30 يوم", sLeftFree: "رصيدك المتبقي", yesterday: "أمس", untitled: "بحث بدون اسم", noLists: "ما عندك قوائم لين الحين. سوّ بحث، أو استورد ملف CSV.", noRows: "القائمة فاضية.", loading: "جاري التحميل…", failed: "ما قدرنا نحفظ", tooBig: "أول 5000 سجل بس ينحفظون"
+    },
+    en: {
+      langBtn: "العربية", logout: "Log out", hello: "Welcome back", plan: "Weekly plan", newSearch: "New search",
+      nav: ["Overview", "Goals", "Connectors", "Features", "Databases"],
+      line: (n, l) => "You got " + n + " new leads this week. " + l + " more to reach your goal.",
+      tWeek: "Leads this week", tMonth: "Leads this month", tTotal: "Leads from us so far", tLeft: "Credits this week", vsLast: "vs last month", sTotal: "Since you signed up", sLeft: "Renews Sunday",
+      ofGoal: (g) => "of a " + g + " goal",
+      usage: "Your usage", rWeek: "Week", rMonth: "Month", lgLeads: "Leads", lgGoal: "Goal",
+      days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], weeks: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      funnel: "Where your leads are this month", stages: ["New", "Contacted", "Meeting", "Won"],
+      goalsE: "Goals", goalsH: "Goals and expectations", goalsP: "Change them any time. We rank leads and track your progress against them.", save: "Save", saved: "Saved",
+      gLeads: "New leads per week", gMeet: "Meetings per month", expH: "Your expectations", eDeal: "Average deal size", eRate: "Expected closing rate", eCycle: "Sales cycle",
+      cycles: ["Under a week", "2 to 4 weeks", "1 to 3 months", "Over 3 months"],
+      forecast: (n, v, c) => "With these numbers, expect about " + n + " deals a month, worth about " + v + " " + c + ".",
+      connE: "Connectors", connH: "Connect your tools", connP: "Send leads to where you already work.", connect: "Connect", disconnect: "Disconnect", on: "Connected", off: "Not connected", connDone: "Connected", connOff: "Disconnected",
+      conns: [["WhatsApp Business", "#25a366", "WA", "Send hot leads to your WhatsApp the moment they arrive."], ["Gmail", "#c5483b", "G", "Start follow-ups from your inbox with a ready template."], ["Outlook", "#2b6cb0", "O", "The same, if you use Microsoft."], ["Google Sheets", "#1e8e4f", "S", "Every new lead is added to your sheet."], ["HubSpot", "#e2683c", "H", "Add leads and deals to your CRM."], ["Salesforce", "#1b8fd6", "SF", "Sync leads with Salesforce."], ["Zoho CRM", "#d8473f", "Z", "Sync leads with Zoho."], ["Webhook", "#4b5a5b", "{ }", "Send every lead to any system you use."]],
+      featE: "Features", featH: "Turn on what you need", featP: "Switch any feature on or off whenever you like.",
+      feats: [["Weekly auto-search", "Masar re-runs your search every Sunday and adds new leads."], ["Hot lead alerts", "A WhatsApp message when a lead scores above 85."], ["Daily email digest", "Today's leads and deal updates every morning."], ["Data enrichment", "Adds phone numbers, emails and social accounts to each lead."], ["Hide big chains", "Removes branches of large and global chains from results."], ["Auto-export", "Every new lead goes to your Google Sheet."], ["Reports in Arabic", "Reports and summaries are written in Arabic."]],
+      featOn: "Turned on", featOff: "Turned off",
+      dbE: "Databases", dbH: "Your client databases", dbP: "All your customer lists in one place. Import a CSV file or start a new list.", dbSearch: "Search lists", import: "Import CSV", newDb: "New list",
+      dbHead: ["List", "Records", "Source", "Updated", ""], open: "View", exportB: "Export", del: "Delete", sure: "Sure?", yes: "Delete", no: "No",
+      srcMasar: "Masar", srcCsv: "CSV file", srcManual: "Manual", srcHub: "HubSpot", today: "Today", newName: "New list", imported: (n, r) => "Imported " + n + " (" + r + " records)", deleted: "Deleted", exported: "Preparing your file", empty: "No lists match your search.",
+      miniHead: ["Business", "City", "Phone", "Status"],
+      fbQ: "How is Masar working for you?", fbPh: "Add a note (optional)", send: "Send", thanks: "Thanks, we got your feedback.", rate: "Rate out of 5",
+      planFree: "Free plan", tLeftFree: "Your credits", firstLine: "No leads yet. Run your first search and your numbers show up here.", last30: "Last 30 days", sLeftFree: "Leads left", yesterday: "Yesterday", untitled: "Untitled search", noLists: "No lists yet. Run a search or import a CSV file.", noRows: "This list is empty.", loading: "Loading…", failed: "Could not save", tooBig: "Only the first 5,000 rows are kept"
+    }
+  };
+  const d = () => D[M.lang];
+  // Everything below comes from the signed-in user's own rows in the database (sent with the page by the server).
+  const DATA = window.MASAR_DATA || {};
+  const S0 = DATA.setup || {};
+  const ST = DATA.stats || { week: [0, 0, 0, 0, 0, 0, 0], month: [0, 0, 0, 0], month30: 0, prev30: 0, total: 0, meetings30: 0, funnel: [0, 0, 0, 0] };
+  const ACC = DATA.account || { credits: 0, plan: "free" };
+  const idx = (names, list) => (names || []).map((n) => list.findIndex((x) => x[0] === n)).filter((i) => i >= 0);
+  const RATES = [5, 10, 15, 20, 30];
+  const setup = { leads: S0.leads_per_week || 50, meet: S0.meetings_per_month || 8, deal: Number(S0.deal_size) || 0, cur: S0.currency || "SAR" };
+  const state = {
+    conns: idx(S0.connectors, D.en.conns), feats: idx(S0.features, D.en.feats),
+    range: M.store.get("masar-range", "week"), rate: Math.max(0, RATES.indexOf(S0.close_rate ?? 10)), cycle: S0.sales_cycle ?? 1, rating: 0
+  };
+  let lists = (DATA.lists || []).slice();
+
+  async function api(path, opts) {
+    const r = await fetch(path, Object.assign({ headers: { "content-type": "application/json" } }, opts));
+    if (r.status === 401) { location.href = "/login?redirect_url=/dashboard"; throw new Error("signed out"); }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "Error");
+    return j;
+  }
+  const fail = (e) => M.toast(d().failed + (e && e.message ? ": " + e.message : ""));
+  const saveSetup = (patch) => api("/api/me/setup", { method: "POST", body: JSON.stringify(patch) });
+
+  $("#brand").innerHTML = M.mark(32) + '<span class="word"><b>masar</b><small>مسار</small></span>';
+  $("#searchIco").innerHTML = M.icon("search"); $("#upIco").innerHTML = M.icon("up"); $("#plusIco").innerHTML = M.icon("plus");
+  const SECS = ["overview", "goals", "connectors", "features", "databases"], SI = ["home", "target", "plug", "toggle", "db"];
+  const WEEK = ST.week, MONTH = ST.month;
+  let openDb = "", confirmDb = "", q = "";
+  const previews = {};
+
+  // The last 7 days, oldest first, named in the page language
+  const dayNames = () => WEEK.map((_, i) => new Date(Date.now() - (6 - i) * 864e5).toLocaleDateString(M.lang === "ar" ? "ar" : "en", { weekday: "short" }));
+  const when = (iso) => {
+    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
+    return days <= 0 ? d().today : days === 1 ? d().yesterday : new Date(iso).toLocaleDateString(M.lang === "ar" ? "ar" : "en", { day: "numeric", month: "short" });
+  };
+
+  function renderNav() {
+    $("#sidelinks").innerHTML = SECS.map((s, i) => '<a class="nav-i" href="#' + s + '" data-sec="' + s + '">' + M.icon(SI[i]) + "<span>" + d().nav[i] + "</span></a>").join("");
+    $("#tabs").innerHTML = SECS.map((s, i) => '<a href="#' + s + '" data-sec="' + s + '">' + M.icon(SI[i]) + "<span>" + d().nav[i] + "</span></a>").join("");
+    spy();
+  }
+  function spy() {
+    let cur = SECS[0];
+    SECS.forEach((s) => { const el = document.getElementById(s); if (el && el.getBoundingClientRect().top < innerHeight * 0.35) cur = s; });
+    $$("[data-sec]").forEach((a) => a.classList.toggle("on", a.dataset.sec === cur));
+  }
+  addEventListener("scroll", spy, { passive: true });
+
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  function renderOverview() {
+    const t = d(), week = WEEK.reduce((a, b) => a + b, 0), goal = setup.leads;
+    $("#hello").textContent = t.hello + (DATA.username ? (M.lang === "ar" ? "، " : ", ") + DATA.username : "");
+    $("#planBadge").textContent = ACC.plan === "weekly" ? t.plan : t.planFree;
+    $("#vWeek").textContent = M.fmt(week);
+    $("#sWeek").textContent = t.ofGoal(goal);
+    $("#mWeek").style.width = Math.min(100, (week / goal) * 100) + "%";
+    $("#helloLine").textContent = ST.total ? t.line(week, Math.max(0, goal - week)) : t.firstLine;
+    $("#vMonth").textContent = M.fmt(ST.month30);
+    const ch = ST.prev30 ? Math.round(((ST.month30 - ST.prev30) / ST.prev30) * 100) : null;
+    $("#sMonth").innerHTML = ch === null ? esc(t.last30) : '<span class="' + (ch >= 0 ? "up" : "down") + ' num">' + (ch >= 0 ? "+" : "") + ch + "%</span> " + esc(t.vsLast);
+    $("#vTotal").textContent = M.fmt(ST.total);
+    const cap = ACC.plan === "weekly" ? 100 : Math.max(10, ACC.credits);
+    $("#vLeft").innerHTML = M.fmt(ACC.credits) + ' <span class="muted" style="font-size:16px">/ ' + cap + "</span>";
+    $("#sLeft").textContent = ACC.plan === "weekly" ? t.sLeft : t.sLeftFree;
+    $("[data-t=tLeft]").textContent = ACC.plan === "weekly" ? t.tLeft : t.tLeftFree;
+    $("#mLeft").style.width = Math.min(100, (ACC.credits / cap) * 100) + "%";
+    if (state.range === "week") M.bars($("#usageChart"), WEEK, dayNames(), { goal: Math.round(goal / 7), label: t.usage });
+    else M.bars($("#usageChart"), MONTH, t.weeks, { goal: goal, label: t.usage });
+    $$("[data-range]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.range === state.range));
+    const F = ST.funnel, top = Math.max(1, F[0]);
+    $("#funnel").innerHTML = F.map((v, i) => '<div><div style="display:flex;justify-content:space-between;font-size:13.5px"><span>' + t.stages[i] + '</span><b class="num">' + M.fmt(v) + '</b></div><div class="meter"><i style="width:' + (v / top) * 100 + '%;background:' + ["var(--teal-hi)", "var(--teal-hi)", "var(--mint)", "var(--mint)"][i] + '"></i></div></div>').join("");
+  }
+  $$("[data-range]").forEach((b) => b.addEventListener("click", () => { state.range = b.dataset.range; M.store.set("masar-range", state.range); renderOverview(); }));
+
+  function renderGoals() {
+    $("#gLeads").value = setup.leads; $("#gMeet").value = setup.meet; $("#eDeal").value = setup.deal;
+    $("#eRate").selectedIndex = state.rate;
+    $("#eCycle").innerHTML = d().cycles.map((c) => "<option>" + c + "</option>").join(""); $("#eCycle").selectedIndex = state.cycle;
+    syncGoals();
+  }
+  function syncGoals() {
+    const L = +$("#gLeads").value, Mt = +$("#gMeet").value, week = WEEK.reduce((a, b) => a + b, 0);
+    $("#gLeadsNow").textContent = week; $("#gMeetNow").textContent = ST.meetings30;
+    $("#gLeadsV").textContent = L; $("#gLeadsT").textContent = L; $("#gMeetV").textContent = Mt; $("#gMeetT").textContent = Mt;
+    $("#gLeadsM").style.width = Math.min(100, (week / L) * 100) + "%"; $("#gMeetM").style.width = Math.min(100, (ST.meetings30 / Mt) * 100) + "%";
+    const rate = RATES[$("#eRate").selectedIndex] / 100, deals = Math.max(1, Math.round(Mt * rate * 3.5));
+    $("#forecast").textContent = d().forecast(deals, M.fmt(deals * (+$("#eDeal").value || 0)), setup.cur || "SAR");
+  }
+  ["gLeads", "gMeet", "eDeal", "eRate"].forEach((id) => $("#" + id).addEventListener("input", syncGoals));
+  $("#saveGoals").addEventListener("click", async () => {
+    const next = { leads: +$("#gLeads").value, meet: +$("#gMeet").value, deal: +$("#eDeal").value || 0 };
+    try {
+      await saveSetup({ leads_per_week: next.leads, meetings_per_month: next.meet, deal_size: next.deal, close_rate: RATES[$("#eRate").selectedIndex], sales_cycle: $("#eCycle").selectedIndex });
+      Object.assign(setup, next); state.rate = $("#eRate").selectedIndex; state.cycle = $("#eCycle").selectedIndex;
+      renderOverview(); M.toast(d().saved);
+    } catch (e) { fail(e); }
+  });
+
+  function renderConns() {
+    $("#connGrid").innerHTML = d().conns.map((c, i) => {
+      const on = state.conns.includes(i);
+      return '<div class="card conn"><div class="c-top"><span class="ci" style="background:' + c[1] + '">' + c[2] + '</span><span class="c-name"><b>' + c[0] + '</b><span class="badge ' + (on ? "" : "plain") + '">' + (on ? d().on : d().off) + "</span></span></div><p>" + c[3] + '</p><div class="c-foot"><span></span><button type="button" class="btn sm ' + (on ? "" : "mint") + '" data-conn="' + i + '">' + (on ? d().disconnect : d().connect) + "</button></div></div>";
+    }).join("");
+    $$("[data-conn]").forEach((b) => b.addEventListener("click", async () => {
+      const i = +b.dataset.conn, on = state.conns.includes(i);
+      const next = on ? state.conns.filter((x) => x !== i) : state.conns.concat(i);
+      b.disabled = true;
+      try { await saveSetup({ connectors: next.map((k) => D.en.conns[k][0]) }); state.conns = next; renderConns(); M.toast(on ? d().connOff : d().connDone); }
+      catch (e) { b.disabled = false; fail(e); }
+    }));
+  }
+  function renderFeats() {
+    $("#feats").innerHTML = d().feats.map((f, i) => '<div class="feat"><span class="f-t"><b id="ft' + i + '">' + f[0] + "</b><small>" + f[1] + '</small></span><button type="button" class="switch" role="switch" aria-labelledby="ft' + i + '" aria-checked="' + state.feats.includes(i) + '" data-feat="' + i + '"></button></div>').join("");
+    $$("[data-feat]").forEach((b) => b.addEventListener("click", async () => {
+      const i = +b.dataset.feat, on = state.feats.includes(i);
+      const next = on ? state.feats.filter((x) => x !== i) : state.feats.concat(i);
+      b.setAttribute("aria-checked", !on);
+      try { await saveSetup({ features: next.map((k) => D.en.feats[k][0]) }); state.feats = next; M.toast(on ? d().featOff : d().featOn); }
+      catch (e) { b.setAttribute("aria-checked", on); fail(e); }
+    }));
+  }
+
+  // Client lists: the user's Masar searches plus the lists they imported or created
+  const key = (r) => r.kind + ":" + r.id;
+  function renderDbs() {
+    const t = d(), rows = lists.filter((r) => !q || (r.name || "").toLowerCase().includes(q.toLowerCase()));
+    let h = "<thead><tr>" + t.dbHead.map((x) => "<th>" + x + "</th>").join("") + "</tr></thead><tbody>";
+    if (!lists.length) h += '<tr><td colspan="5" class="muted">' + t.noLists + "</td></tr>";
+    else if (!rows.length) h += '<tr><td colspan="5" class="muted">' + t.empty + "</td></tr>";
+    rows.forEach((r) => {
+      const k = key(r), name = r.name || t.untitled;
+      h += '<tr class="click" data-open="' + k + '"><td><b>' + esc(name) + '</b></td><td class="num">' + M.fmt(r.n) + '</td><td><span class="badge plain">' + t[r.kind === "search" ? "srcMasar" : r.src === "csv" ? "srcCsv" : "srcManual"] + '</span></td><td class="muted">' + when(r.at) + '</td><td><div class="row-act">';
+      h += confirmDb === k
+        ? '<span class="confirm">' + t.sure + ' <button type="button" class="btn sm danger" data-yes="' + k + '">' + t.yes + '</button><button type="button" class="btn sm" data-no="1">' + t.no + "</button></span>"
+        : '<button type="button" class="btn sm" data-exp="' + k + '">' + (r.kind === "search" ? t.open : t.exportB) + '</button><button type="button" class="btn sm danger" data-del="' + k + '" aria-label="' + t.del + '">' + M.icon("trash") + "</button>";
+      h += "</div></td></tr>";
+      if (openDb === k) {
+        const p = previews[k];
+        h += '<tr class="db-detail"><td colspan="5">' + (!p ? '<span class="muted">' + t.loading + "</span>"
+          : !p.rows.length ? '<span class="muted">' + t.noRows + "</span>"
+          : '<table class="mini"><tr>' + p.columns.map((x) => "<th>" + esc(x) + "</th>").join("") + "</tr>" + p.rows.map((s) => "<tr>" + s.map((c) => "<td>" + esc(c) + "</td>").join("") + "</tr>").join("") + "</table>") + "</td></tr>";
+      }
+    });
+    $("#dbTable").innerHTML = h + "</tbody>";
+  }
+  const byKey = (k) => lists.find((r) => key(r) === k);
+  $("#dbTable").addEventListener("click", async (e) => {
+    const b = e.target.closest("button"), tr = e.target.closest("[data-open]");
+    if (b && b.dataset.del) { confirmDb = b.dataset.del; renderDbs(); return; }
+    if (b && b.dataset.no) { confirmDb = ""; renderDbs(); return; }
+    if (b && b.dataset.yes) {
+      const r = byKey(b.dataset.yes);
+      try { await api("/api/me/lists?kind=" + r.kind + "&id=" + encodeURIComponent(r.id), { method: "DELETE" }); lists = lists.filter((x) => x !== r); confirmDb = ""; openDb = ""; renderDbs(); M.toast(d().deleted); }
+      catch (err) { fail(err); }
+      return;
+    }
+    if (b && b.dataset.exp) {
+      const r = byKey(b.dataset.exp);
+      location.href = r.kind === "search" ? "/?search=" + encodeURIComponent(r.id) + "&view=results" : "/api/me/lists?format=csv&id=" + encodeURIComponent(r.id);
+      return;
+    }
+    if (tr && !b) {
+      const k = tr.dataset.open, r = byKey(k);
+      openDb = openDb === k ? "" : k; renderDbs();
+      if (openDb && !previews[k]) {
+        try { previews[k] = await api("/api/me/lists?kind=" + r.kind + "&id=" + encodeURIComponent(r.id)); } catch (err) { previews[k] = { columns: [], rows: [] }; fail(err); }
+        renderDbs();
+      }
+    }
+  });
+  $("#dbSearch").addEventListener("input", (e) => { q = e.target.value; renderDbs(); });
+
+  async function addList(body) {
+    const j = await api("/api/me/lists", { method: "POST", body: JSON.stringify(body) });
+    lists.unshift(j.list); renderDbs(); return j.list;
+  }
+  $("#newDb").addEventListener("click", async () => {
+    try { await addList({ name: d().newName, source: "manual", columns: [], rows: [] }); } catch (e) { fail(e); }
+  });
+
+  // Small CSV reader: commas or semicolons, quoted fields, first line is the header
+  function parseCsv(text) {
+    const sep = (text.split(/\r?\n/)[0].match(/;/g) || []).length > (text.split(/\r?\n/)[0].match(/,/g) || []).length ? ";" : ",";
+    const out = []; let row = [], f = "", qd = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (qd) { if (c === '"' && text[i + 1] === '"') { f += '"'; i++; } else if (c === '"') qd = false; else f += c; }
+      else if (c === '"') qd = true;
+      else if (c === sep) { row.push(f); f = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(f); f = ""; if (row.some((x) => x.trim())) out.push(row); row = []; }
+      else f += c;
+    }
+    row.push(f); if (row.some((x) => x.trim())) out.push(row);
+    return { columns: (out.shift() || []).map((x) => x.trim()), rows: out };
+  }
+  $("#csv").addEventListener("change", (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = async () => {
+      const p = parseCsv(String(r.result).replace(/^﻿/, ""));
+      if (p.rows.length > 5000) M.toast(d().tooBig);
+      try { await addList({ name: file.name.replace(/\.csv$/i, "").slice(0, 200), source: "csv", columns: p.columns.slice(0, 40), rows: p.rows.slice(0, 5000).map((x) => x.slice(0, 40)) }); M.toast(d().imported(file.name, Math.min(5000, p.rows.length))); }
+      catch (err) { fail(err); }
+    };
+    r.readAsText(file); e.target.value = "";
+  });
+
+  const STAR = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
+  function renderFb() {
+    if (!$("#stars")) return;
+    $("#stars").setAttribute("aria-label", d().rate);
+    $("#stars").innerHTML = [1, 2, 3, 4, 5].map((n) => '<button type="button" aria-label="' + n + '" class="' + (n <= state.rating ? "on" : "") + '" data-star="' + n + '">' + STAR + "</button>").join("");
+  }
+  $("#stars").addEventListener("click", (e) => { const b = e.target.closest("[data-star]"); if (b) { state.rating = +b.dataset.star; renderFb(); } });
+  $("#fbSend").addEventListener("click", async () => {
+    const message = $("#fbText").value.trim();
+    if (!state.rating && !message) { $("#fbText").focus(); return; }
+    try { await api("/api/me/feedback", { method: "POST", body: JSON.stringify({ rating: state.rating || null, message }) }); $("#feedback").innerHTML = '<span class="thanks">' + d().thanks + "</span>"; }
+    catch (e) { fail(e); }
+  });
+  $("#newSearch").addEventListener("click", (e) => { e.preventDefault(); location.href = "/"; });
+
+  M.onLang(() => { renderNav(); renderOverview(); renderGoals(); renderConns(); renderFeats(); renderDbs(); renderFb(); });
+  M.init(D);
+})();
+</script>
+</body>
+</html>

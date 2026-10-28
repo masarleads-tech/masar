@@ -50,7 +50,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   if (!accountsEnabled) return page;
   return (
     <ClerkProvider localization={ar ? arSA : enGB} appearance={clerkAppearance}
-      signInUrl="/login" signUpUrl="/login?mode=signup" signInFallbackRedirectUrl="/" signUpFallbackRedirectUrl="/?welcome=1">
+      signInUrl="/login" signUpUrl="/login?mode=signup" signInFallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/welcome">
       {page}
     </ClerkProvider>
   );

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Masar Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="app.css">
+<style>
+body { height: 100vh; height: 100svh; display: flex; flex-direction: column; background: radial-gradient(60% 50% at 50% 0%, rgba(23, 107, 100, 0.22), transparent 70%), var(--bg); }
+.bg-roads { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.bg-roads path { fill: none; stroke: var(--teal-hi); stroke-width: 1; opacity: 0.16; vector-effect: non-scaling-stroke; }
+.top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: calc(14px + env(safe-area-inset-top, 0px)) 14px; padding-left: var(--gl); padding-right: var(--gr); }
+.top .end { display: flex; gap: 8px; align-items: center; }
+.skip { color: var(--muted); font-size: 14px; text-decoration: none; padding: 8px; }
+.skip:hover { color: var(--fg); }
+.prog { position: relative; z-index: 2; display: flex; gap: 6px; justify-content: center; padding-left: var(--gl); padding-right: var(--gr); }
+.prog i { width: 34px; height: 4px; border-radius: 4px; background: var(--line); transition: background 0.4s; }
+.prog i.on { background: var(--mint); }
+.stagebox { position: relative; z-index: 1; flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); min-height: 0; overflow: hidden; }
+.step { grid-area: 1 / 1; align-self: stretch; justify-self: center; display: flex; flex-direction: column; justify-content: safe center; overflow-y: auto; overscroll-behavior: contain; width: min(640px, 100%); padding-block: 28px 40px; padding-left: var(--gl); padding-right: var(--gr); opacity: 0; transform: translateX(40px); pointer-events: none; transition: opacity 0.45s, transform 0.55s cubic-bezier(0.65, 0, 0.35, 1); visibility: hidden; }
+html[dir="rtl"] .step { transform: translateX(-40px); }
+.step.past { transform: translateX(-40px); }
+html[dir="rtl"] .step.past { transform: translateX(40px); }
+html .step.on, html[dir] .step.on { opacity: 1; transform: none; pointer-events: auto; visibility: visible; }
+.step h1 { margin: 6px 0 10px; font-size: clamp(28px, 4.4vw, 42px); line-height: 1.25; text-wrap: balance; }
+html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
+.step > p { margin: 0 0 24px; color: var(--muted); font-size: 16.5px; max-width: 48ch; }
+.hello { text-align: center; }
+.hello > p { margin-inline: auto; }
+.hello .logo { width: 108px; height: 108px; margin: 0 auto 22px; }
+.hello .logo svg { width: 100%; height: 100%; filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 30px rgba(114, 183, 167, 0.2)); }
+.hello .logo .stroke { stroke-dasharray: 150; stroke-dashoffset: 150; }
+.hello.on .logo .stroke { animation: draw 1.3s 0.2s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+.hello .logo .dot { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+.hello.on .logo .dot { animation: pop 0.5s 1.3s cubic-bezier(0.34, 1.8, 0.64, 1) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes pop { to { transform: scale(1); } }
+.group { margin-top: 18px; }
+.group h3 { margin: 0 0 10px; font-size: 13.5px; color: var(--muted); font-weight: 600; }
+.goal-grid { display: grid; gap: 18px; }
+.goal-row { padding: 16px; display: grid; gap: 10px; }
+.goal-row .gr-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.goal-row b.val { font: 700 24px/1 var(--font-en); color: var(--mint); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.conns { display: grid; gap: 10px; }
+.conn { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.conn .ci { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; font: 800 13px/1 var(--font-en); color: #fff; }
+.conn .ct { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.conn .ct small { color: var(--muted); font-size: 12.5px; }
+.dl { display: grid; gap: 10px; }
+.dl-opt { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.dl-opt.mine { border-color: var(--mint); }
+.dl-opt .oi { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.05); flex: none; }
+.dl-opt .oi svg { width: 22px; height: 22px; }
+.dl-opt .ot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dl-opt .ot small { color: var(--muted); font-size: 12.5px; }
+.dl-note { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: rgba(114, 183, 167, 0.08); color: #cfe0dc; font-size: 14px; }
+.dl-note ol { margin: 6px 0 0; padding-inline-start: 20px; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 28px; }
+.actions .btn.mint { min-width: 140px; }
+@media (max-width: 560px) { .two { grid-template-columns: 1fr; } .actions .btn.mint { flex: 1; } }
+@media (prefers-reduced-motion: reduce) { .step { transition: none; } .hello.on .logo .stroke, .hello.on .logo .dot { animation-duration: 0.01s; animation-delay: 0s; } }
+</style>
+</head>
+<body>
+<svg class="bg-roads" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <path d="M-20 640C140 580 260 600 380 530S600 370 760 390 1000 310 1220 340"/>
+  <path d="M420 820C470 700 520 640 600 600S800 560 880 470 1040 300 1220 260"/>
+  <path d="M-20 300C120 320 220 280 330 300S560 380 680 340 900 200 1220 180"/>
+</svg>
+<header class="top">
+  <a class="brand" href="/" aria-label="Masar مسار" id="brand"></a>
+  <div class="end">
+    <button class="btn sm" type="button" data-lang-toggle data-t="langBtn"></button>
+    <a class="skip" href="/dashboard" id="skip" data-t="skip"></a>
+  </div>
+</header>
+<div class="prog" aria-hidden="true"></div>
+
+<main class="stagebox">
+  <!-- 1 -->
+  <section class="step hello" data-step>
+    <div class="logo"><svg viewBox="0 0 96 96"><rect width="96" height="96" rx="20" fill="#101A1B"/><rect x=".75" y=".75" width="94.5" height="94.5" rx="19.25" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5"/><path class="stroke" d="M25 67V34c0-5 4-9 9-9h10c5 0 9 4 9 9v12c0 5 4 9 9 9h9" fill="none" stroke="#FAF8F3" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle class="dot" cx="74" cy="55" r="7" fill="#72B7A7"/></svg></div>
+    <span class="eyebrow" data-t="e1"></span>
+    <h1 data-t="h1"></h1>
+    <p data-t="p1"></p>
+  </section>
+  <!-- 2 -->
+  <section class="step" data-step>
+    <span class="eyebrow" data-t="e2"></span>
+    <h1 data-t="h2"></h1>
+    <p data-t="p2"></p>
+    <div class="chips" id="industries"></div>
+    <div class="field" style="margin-top:18px"><label for="ideal" data-t="idealL"></label><textarea class="input" id="ideal" data-ph="idealPh"></textarea></div>
+  </section>
+  <!-- 3 -->
+  <section class="step" data-step>
+    <span class="eyebrow" data-t="e3"></span>
+    <h1 data-t="h3"></h1>
+    <p data-t="p3"></p>
+    <div id="cities"></div>
+  </section>
+  <!-- 4 -->
+  <section class="step" data-step>
+    <span class="eyebrow" data-t="e4"></span>
+    <h1 data-t="h4"></h1>
+    <p data-t="p4"></p>
+    <div class="goal-grid">
+      <div class="card goal-row"><div class="gr-top"><label for="gLeads" data-t="gLeads"></label><b class="val" id="gLeadsV"></b></div><input type="range" id="gLeads" min="10" max="200" step="10" value="50"></div>
+      <div class="card goal-row"><div class="gr-top"><label for="gMeet" data-t="gMeet"></label><b class="val" id="gMeetV"></b></div><input type="range" id="gMeet" min="1" max="40" step="1" value="8"></div>
+      <div class="two">
+        <div class="field"><label for="gDeal" data-t="gDeal"></label><input class="input num" id="gDeal" type="number" min="0" value="5000" inputmode="numeric"></div>
+        <div class="field"><label for="gCur" data-t="gCur"></label><select class="input" id="gCur"><option value="SAR">SAR</option><option value="AED">AED</option><option value="JOD">JOD</option><option value="QAR">QAR</option><option value="KWD">KWD</option><option value="USD">USD</option></select></div>
+      </div>
+    </div>
+  </section>
+  <!-- 5 -->
+  <section class="step" data-step>
+    <span class="eyebrow" data-t="e5"></span>
+    <h1 data-t="h5"></h1>
+    <p data-t="p5"></p>
+    <div class="conns" id="conns"></div>
+  </section>
+  <!-- 6 -->
+  <section class="step" data-step>
+    <span class="eyebrow" data-t="e6"></span>
+    <h1 data-t="h6"></h1>
+    <p data-t="p6"></p>
+    <div class="dl" id="dl"></div>
+    <div id="dlMore"></div>
+  </section>
+</main>
+<div class="actions" style="position:relative;z-index:2;width:min(640px,100%);margin:0 auto;padding-block:0 calc(28px + env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr)">
+  <button class="btn" type="button" id="back" data-t="back"></button>
+  <button class="btn mint" type="button" id="next"></button>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  const M = window.Masar, { $, $$ } = M;
+  const D = {
+    ar: {
+      langBtn: "English", skip: "تخطّي", back: "رجوع", next: "التالي", start: "يلّا نبدأ", finish: "روح للوحة التحكم",
+      e1: "حسابك جاهز", h1: "أهلاً بك في مسار.", p1: "خلّنا نجهّز مسار لك في دقيقة: وش تبيع، ووين عملاؤك، وكم تبي عميل. وبعدها نثبّته على جهازك.",
+      e2: "الخطوة 1 من 5", h2: "مين تبيع لهم؟", p2: "اختر القطاعات اللي تستهدفها. تقدر تغيّرها بعدين.", idealL: "صف عميلك المثالي (اختياري)", idealPh: "مثال: مقاهي مستقلة فتحت آخر سنة، فيها أكثر من 5 موظفين",
+      e3: "الخطوة 2 من 5", h3: "وين عملاؤك؟", p3: "اختر المدن. بحث واحد يقدر يغطيها كلها.",
+      e4: "الخطوة 3 من 5", h4: "وش هدفك؟", p4: "نستخدمه عشان نوريك تقدمك ونرتّب العملاء لك.", gLeads: "عملاء جدد بالأسبوع", gMeet: "اجتماعات بالشهر", gDeal: "متوسط قيمة الصفقة", gCur: "العملة",
+      e5: "الخطوة 4 من 5", h5: "اربط أدواتك", p5: "خل العملاء يوصلون للمكان اللي تشتغل فيه. اختياري، وتقدر تسويه من لوحة التحكم.", connect: "ربط", connected: "مربوط",
+      e6: "الخطوة 5 من 5", h6: "ثبّت مسار على جهازك", p6: "استخدمه من المتصفح، أو حمّله على كمبيوترك وجوالك.", download: "تحميل", yours: "جهازك",
+      soon: "تطبيق الكمبيوتر قيد التطوير. بنرسل لك رابط التحميل على إيميلك أول ما يجهز.", iosHow: "ثبّته على الآيفون:", iosSteps: ["افتح موقع مسار في سفاري", "اضغط زر المشاركة", "اختر «إضافة إلى الشاشة الرئيسية»"], andHow: "ثبّته على الأندرويد:", andSteps: ["افتح موقع مسار في كروم", "اضغط القائمة ⋮", "اختر «تثبيت التطبيق»"],
+      saved: "تم حفظ إعداداتك",
+      ind: ["مطاعم ومقاهي", "عيادات", "عقارات", "مقاولات", "تجزئة", "خدمات الشركات", "تعليم وتدريب", "فنادق وسياحة", "صالونات وتجميل", "لوجستيات"],
+      countries: [["الأردن", ["عمّان", "إربد", "الزرقاء", "العقبة"]], ["السعودية", ["الرياض", "جدة", "الدمام", "مكة", "المدينة"]], ["الإمارات", ["دبي", "أبوظبي", "الشارقة"]], ["قطر", ["الدوحة"]], ["الكويت", ["الكويت"]], ["البحرين", ["المنامة"]], ["عُمان", ["مسقط"]]],
+      conns: [["WhatsApp Business", "أرسل العملاء الساخنين لواتسابك", "#25a366", "WA"], ["Gmail", "تابع العملاء من إيميلك", "#c5483b", "G"], ["Google Sheets", "صدّر العملاء تلقائياً لجدول", "#1e8e4f", "S"], ["HubSpot", "أضف العملاء لنظام CRM", "#e2683c", "H"]],
+      os: { mac: ["ماك", "macOS 12 أو أحدث"], win: ["ويندوز", "Windows 10 و 11"], lin: ["لينكس", "Ubuntu و Debian"], iph: ["آيفون", "iOS 16 أو أحدث"], and: ["أندرويد", "Android 10 أو أحدث"] }
+    },
+    en: {
+      langBtn: "العربية", skip: "Skip", back: "Back", next: "Next", start: "Let's start", finish: "Go to dashboard",
+      e1: "Your account is ready", h1: "Welcome to Masar.", p1: "Let's set Masar up in a minute: what you sell, where your customers are, and how many leads you want. Then we'll install it on your device.",
+      e2: "Step 1 of 5", h2: "Who do you sell to?", p2: "Pick the industries you target. You can change them later.", idealL: "Describe your ideal customer (optional)", idealPh: "For example: independent cafés opened in the last year, with more than 5 staff",
+      e3: "Step 2 of 5", h3: "Where are your customers?", p3: "Pick the cities. One search can cover all of them.",
+      e4: "Step 3 of 5", h4: "What's your goal?", p4: "We use it to show your progress and rank leads for you.", gLeads: "New leads per week", gMeet: "Meetings per month", gDeal: "Average deal size", gCur: "Currency",
+      e5: "Step 4 of 5", h5: "Connect your tools", p5: "Send leads to where you already work. Optional, and you can do it later from the dashboard.", connect: "Connect", connected: "Connected",
+      e6: "Step 5 of 5", h6: "Install Masar on your device", p6: "Use it in your browser, or install it on your computer and phone.", download: "Download", yours: "Your device",
+      soon: "The computer app is still being built. We'll email you the download link as soon as it's ready.", iosHow: "Install on iPhone:", iosSteps: ["Open the Masar site in Safari", "Tap the Share button", "Choose “Add to Home Screen”"], andHow: "Install on Android:", andSteps: ["Open the Masar site in Chrome", "Tap the ⋮ menu", "Choose “Install app”"],
+      saved: "Your settings are saved",
+      ind: ["Restaurants & cafés", "Clinics", "Real estate", "Contracting", "Retail", "Business services", "Education & training", "Hotels & tourism", "Salons & beauty", "Logistics"],
+      countries: [["Jordan", ["Amman", "Irbid", "Zarqa", "Aqaba"]], ["Saudi Arabia", ["Riyadh", "Jeddah", "Dammam", "Makkah", "Madinah"]], ["UAE", ["Dubai", "Abu Dhabi", "Sharjah"]], ["Qatar", ["Doha"]], ["Kuwait", ["Kuwait City"]], ["Bahrain", ["Manama"]], ["Oman", ["Muscat"]]],
+      conns: [["WhatsApp Business", "Send hot leads to your WhatsApp", "#25a366", "WA"], ["Gmail", "Follow up from your inbox", "#c5483b", "G"], ["Google Sheets", "Export leads to a sheet automatically", "#1e8e4f", "S"], ["HubSpot", "Add leads to your CRM", "#e2683c", "H"]],
+      os: { mac: ["Mac", "macOS 12 or later"], win: ["Windows", "Windows 10 and 11"], lin: ["Linux", "Ubuntu and Debian"], iph: ["iPhone", "iOS 16 or later"], and: ["Android", "Android 10 or later"] }
+    }
+  };
+  $("#brand").innerHTML = M.mark(32) + '<span class="word"><b>masar</b><small>مسار</small></span>';
+
+  // Choices are kept by index so they survive a language switch, and saved to the account by their English names.
+  const S0 = (window.MASAR_DATA || {}).setup || {};
+  const enCities = D.en.countries.flatMap((c, ci) => c[1].map((x, i) => [ci + "-" + i, c[0] + " / " + x]));
+  const pickIdx = (names, list) => (names || []).map((n) => list.indexOf(n)).filter((i) => i >= 0);
+  const setup = {
+    ind: S0.industries ? pickIdx(S0.industries, D.en.ind) : [0],
+    cities: S0.cities ? enCities.filter((c) => S0.cities.includes(c[1])).map((c) => c[0]) : ["0-0", "1-0"],
+    leads: S0.leads_per_week || 50, meet: S0.meetings_per_month || 8, deal: S0.deal_size != null ? Number(S0.deal_size) : 5000, cur: S0.currency || "SAR",
+    conns: pickIdx(S0.connectors, D.en.conns.map((c) => c[0])), ideal: S0.ideal_customer || ""
+  };
+  function read() {
+    setup.leads = +$("#gLeads").value; setup.meet = +$("#gMeet").value; setup.deal = +$("#gDeal").value || 0; setup.cur = $("#gCur").value; setup.ideal = $("#ideal").value.trim();
+  }
+  async function persist(done) {
+    read();
+    const body = {
+      industries: setup.ind.map((i) => D.en.ind[i]), ideal_customer: setup.ideal,
+      cities: enCities.filter((c) => setup.cities.includes(c[0])).map((c) => c[1]),
+      leads_per_week: setup.leads, meetings_per_month: setup.meet, deal_size: setup.deal, currency: setup.cur,
+      connectors: setup.conns.map((i) => D.en.conns[i][0])
+    };
+    if (done) body.setup_done = true;
+    const r = await fetch("/api/me/setup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), keepalive: true });
+    if (r.status === 401) { location.href = "/login?redirect_url=/welcome"; throw new Error("signed out"); }
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Error");
+  }
+  const failed = (e) => M.toast((M.lang === "ar" ? "ما قدرنا نحفظ: " : "Could not save: ") + e.message);
+  const steps = $$("[data-step]");
+  const prog = $(".prog");
+  prog.innerHTML = steps.map(() => "<i></i>").join("");
+  let cur = 0;
+
+  const ua = navigator.userAgent;
+  const myOS = /iPhone|iPad|iPod/.test(ua) ? "iph" : /Android/.test(ua) ? "and" : /Mac/.test(ua) ? "mac" : /Win/.test(ua) ? "win" : /Linux/.test(ua) ? "lin" : "";
+  const OSI = {
+    mac: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C6.9 7.4 5.4 8.3 4.6 9.7c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 3 2.4 1.2 0 1.6-.8 3.1-.8s1.8.8 3.1.8c1.3 0 2.1-1.2 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7 0 0-2.7-1-2.8-4.1zM14 5.6c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>',
+    win: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>',
+    lin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c-2.2 0-3.3 1.8-3.3 4.2 0 1.5-.4 2.6-1.3 3.9C6.2 12.8 5 14.6 5 16.6c0 .7.2 1.3.5 1.8"/><path d="M12 3c2.2 0 3.3 1.8 3.3 4.2 0 1.5.4 2.6 1.3 3.9 1.2 1.7 2.4 3.5 2.4 5.5 0 .7-.2 1.3-.5 1.8"/><path d="M5.5 18.4c.9 1.4 2.8 1.1 3.6 2.1.6.8 1.6 1 2.9 1s2.3-.2 2.9-1c.8-1 2.7-.7 3.6-2.1"/></svg>',
+    iph: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+    and: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 16V10a6 6 0 0 1 12 0v6z"/><path d="M8 4.5 9.2 6.3M16 4.5l-1.2 1.8M6 16h12v2.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 18.5z"/></svg>'
+  };
+
+  function render() {
+    const d = D[M.lang];
+    $("#industries").innerHTML = d.ind.map((x, i) => '<button type="button" class="pick" data-i="' + i + '" aria-pressed="' + setup.ind.includes(i) + '">' + x + "</button>").join("");
+    $$("#industries .pick").forEach((b) => b.addEventListener("click", () => {
+      const i = +b.dataset.i, on = setup.ind.includes(i);
+      setup.ind = on ? setup.ind.filter((x) => x !== i) : setup.ind.concat(i);
+      b.setAttribute("aria-pressed", !on);
+    }));
+    $("#cities").innerHTML = d.countries.map((c, ci) => '<div class="group"><h3>' + c[0] + '</h3><div class="chips">' + c[1].map((x, i) => '<button type="button" class="pick" data-k="' + ci + "-" + i + '" aria-pressed="' + setup.cities.includes(ci + "-" + i) + '">' + x + "</button>").join("") + "</div></div>").join("");
+    $$("#cities .pick").forEach((b) => b.addEventListener("click", () => {
+      const k = b.dataset.k, on = setup.cities.includes(k);
+      setup.cities = on ? setup.cities.filter((x) => x !== k) : setup.cities.concat(k);
+      b.setAttribute("aria-pressed", !on);
+    }));
+    $("#conns").innerHTML = d.conns.map((c, i) => '<div class="card conn"><span class="ci" style="background:' + c[2] + '">' + c[3] + '</span><span class="ct"><b>' + c[0] + "</b><small>" + c[1] + '</small></span><button type="button" class="btn sm ' + (setup.conns.includes(i) ? "mint" : "") + '" data-c="' + i + '">' + (setup.conns.includes(i) ? d.connected : d.connect) + "</button></div>").join("");
+    $$("#conns [data-c]").forEach((b) => b.addEventListener("click", () => {
+      const i = +b.dataset.c, on = setup.conns.includes(i);
+      setup.conns = on ? setup.conns.filter((x) => x !== i) : setup.conns.concat(i);
+      b.classList.toggle("mint", !on); b.textContent = !on ? d.connected : d.connect;
+    }));
+    const order = ["iph", "and"].includes(myOS) ? ["iph", "and", "mac", "win", "lin"] : ["mac", "win", "lin", "iph", "and"];
+    $("#dl").innerHTML = order.map((k) => '<div class="card dl-opt' + (k === myOS ? " mine" : "") + '"><span class="oi">' + OSI[k] + '</span><span class="ot"><b>' + d.os[k][0] + "</b><small>" + d.os[k][1] + (k === myOS ? " · " + d.yours : "") + '</small></span><button type="button" class="btn sm ' + (k === myOS ? "mint" : "") + '" data-os="' + k + '">' + d.download + "</button></div>").join("");
+    $$("#dl [data-os]").forEach((b) => b.addEventListener("click", () => {
+      persist(true).then(() => { location.href = "/download?os=" + b.dataset.os + "&from=tour"; }, failed);
+    }));
+    $("#gLeads").value = setup.leads; $("#gMeet").value = setup.meet; $("#gDeal").value = setup.deal; $("#gCur").value = setup.cur; $("#ideal").value = setup.ideal;
+    sync();
+    go(cur, true);
+  }
+  function sync() {
+    $("#gLeadsV").textContent = $("#gLeads").value;
+    $("#gMeetV").textContent = $("#gMeet").value;
+  }
+  ["gLeads", "gMeet"].forEach((id) => $("#" + id).addEventListener("input", sync));
+
+  function go(i, quiet) {
+    cur = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach((s, k) => { s.classList.toggle("on", k === cur); s.classList.toggle("past", k < cur); s.setAttribute("aria-hidden", k !== cur); });
+    $$(".prog i").forEach((b, k) => b.classList.toggle("on", k <= cur));
+    const d = D[M.lang];
+    $("#back").style.visibility = cur ? "visible" : "hidden";
+    $("#next").textContent = cur === 0 ? d.start : cur === steps.length - 1 ? d.finish : d.next;
+    if (!quiet) { const h = steps[cur].querySelector("h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }
+  }
+  $("#back").addEventListener("click", () => go(cur - 1));
+  $("#next").addEventListener("click", async () => {
+    read();
+    if (cur === steps.length - 1) {
+      $("#next").disabled = true;
+      try { await persist(true); M.toast(D[M.lang].saved); setTimeout(() => { location.href = "/dashboard"; }, 600); }
+      catch (e) { $("#next").disabled = false; failed(e); }
+      return;
+    }
+    if (cur > 0) persist(false).catch(() => {});
+    go(cur + 1);
+  });
+  // Skipping still saves what was picked so far and marks the tour as seen
+  $("#skip").addEventListener("click", (e) => { e.preventDefault(); persist(true).then(() => { location.href = "/dashboard"; }, failed); });
+
+  M.onLang(render);
+  M.init(D);
+})();
+</script>
+</body>
+</html>

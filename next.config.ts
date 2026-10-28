@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // The tour, dashboard and download pages are plain HTML read from src/html at request time.
+  outputFileTracingIncludes: {
+    "/dashboard": ["./src/html/**"],
+    "/welcome": ["./src/html/**"],
+    "/download": ["./src/html/**"],
+  },
 };
 
 export default nextConfig;
