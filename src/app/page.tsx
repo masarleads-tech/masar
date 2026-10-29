@@ -503,6 +503,7 @@ function LeadList({ t, leads, onOutcome }: { t: Strings; leads: Lead[]; onOutcom
                       <div className="font-semibold">{l.mapsUrl ? <Link href={l.mapsUrl}>{l.name}</Link> : l.name}</div>
                       <div className="text-muted text-xs">{[l.category, l.city].filter(Boolean).join(" · ")}</div>
                       {l.rating != null && <div className="text-muted text-xs">★ {l.rating} ({l.reviews ?? 0})</div>}
+                      {l.lookalike && <div className="text-xs text-teal-800">{t.lookalike[l.lookalike.outcome]} {l.lookalike.name}</div>}
                     </div>
                   </div>
                 </td>
@@ -531,6 +532,7 @@ function LeadList({ t, leads, onOutcome }: { t: Strings; leads: Lead[]; onOutcom
               <div className="min-w-0 flex-1">
                 <div className="font-semibold leading-snug">{i + 1}. {l.name}</div>
                 <div className="text-muted text-xs">{[l.category, l.city].filter(Boolean).join(" · ")}</div>
+                {l.lookalike && <div className="text-xs text-teal-800">{t.lookalike[l.lookalike.outcome]} {l.lookalike.name}</div>}
               </div>
               {l.legitimacy && <Badge v={l.legitimacy} label={t[l.legitimacy]} title={l.legitimacyReason} />}
             </div>
