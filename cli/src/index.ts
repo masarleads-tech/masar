@@ -1,13 +1,14 @@
 import { spawn } from "node:child_process";
 import { INDUSTRIES } from "../../src/lib/industries";
-import { createAI, detect, PROVIDERS } from "./ai/providers";
-import { obj, bool } from "./agents/schema";
-import { FINDERS, interview, normalizeBrief, type Finder, type Plan } from "./agents/main";
-import { present } from "./agents/documenter";
+import { AGENT_LABEL, bool, obj, SOURCES, type AgentId } from "../../src/core";
+import { connectAI, createAI, detect, PROVIDERS } from "./ai/providers";
+import { cleanSources, interview, normalizeBrief, type Plan } from "./agents/main";
+import { present } from "./present";
 import { api, ApiError, type Me } from "./api";
 import { configPath, loadConfig, saveConfig, type Config, type ProviderId } from "./config";
 import { writeCsv, writeJson } from "./export";
-import { runPipeline } from "./pipeline";
+import { cliEnv, runPipeline } from "./pipeline";
+import { collectorStatus } from "./collectors";
 import * as ui from "./ui";
 import { VERSION } from "./version";
 
@@ -30,7 +31,6 @@ for (let i = 0; i < argv.length; i++) {
 }
 const flag = (k: string) => (typeof flags[k] === "string" ? (flags[k] as string) : undefined);
 
-const AGENT_NAME: Record<Finder, string> = { google: "Google", website: "Website", instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn" };
 const PLAN_NAME: Record<Me["plan"], string> = { free: "Free", weekly: "Weekly", basic: "Basic", premium: "Premium" };
 
 function openBrowser(url: string) {
@@ -120,7 +120,7 @@ async function chooseAi(cfg: Config) {
   saveConfig(cfg);
   ui.ok(`Masar will use ${PROVIDERS[pick].label}${model ? ` · ${model}` : ""}`);
   ui.info(PROVIDERS[pick].note);
-  if (!PROVIDERS[pick].web) ui.warn("Local models can't search the web: you get map and website data, without Instagram, Facebook and LinkedIn checks.");
+  if (!PROVIDERS[pick].web) ui.warn("Local models can't search the web: you get map and website data, plus the official Instagram, Facebook and LinkedIn checks you connect (see masar doctor).");
   if (cfg.token) await api.setAi(cfg, pick, model ?? "").catch(() => {});
   if (!flags.yes && (await ui.confirm("Test it now?"))) await testAi(cfg);
 }
@@ -142,10 +142,12 @@ function planFromFlags(cap: number): Plan | null {
   if (!city) return null;
   const ind = flag("industry") ?? "custom";
   const known = INDUSTRIES.some((i) => i.key === ind);
-  const agents = (flag("agents")?.split(",").map((s) => s.trim()) ?? ["google", "website", "instagram", "facebook", "linkedin"]).filter((a): a is Finder => (FINDERS as readonly string[]).includes(a));
+  // --agents keeps its old names working: google → google_web, website → read websites.
+  const asked = flag("agents")?.split(",").map((s) => s.trim().toLowerCase().replace(/^google$/, "google_web")) ?? [...SOURCES, "website"];
   return {
     brief: normalizeBrief({ industry: known ? ind : "custom", industryCustom: known ? "" : (flag("what") ?? ind), locations: city.split(/[,،]/), offer: flag("offer") ?? "", count: Number(flag("count")) || 20 }, cap),
-    agents: [...new Set<Finder>(["google", ...agents])], queries: [], reason: "Chosen with command-line options.", summary: "",
+    sources: cleanSources(asked), websites: !flags["no-websites"] && (asked.includes("website") || !flag("agents")),
+    reason: "Chosen with command-line options.", summary: "",
   };
 }
 
@@ -156,13 +158,13 @@ async function find(cfg: Config) {
     if (!(await login(cfg))) return;
   }
   if (!cfg.ai) await chooseAi(cfg);
-  const ai = createAI(cfg.ai);
+  const ai = await connectAI(cfg.ai);
   const me = await api.me(cfg);
   const cap = me.cliLeadsFree ? 200 : Math.min(200, me.credits);
   ui.facts([
     ["Signed in", ui.c.text(me.email ?? "—") + ui.c.muted(`  ·  ${PLAN_NAME[me.plan]} plan`)],
     ["Credits", me.cliLeadsFree ? ui.c.accent("free on your plan") : `${me.credits} left ${ui.c.muted("· 1 per saved lead")}`],
-    ["AI", `${PROVIDERS[ai.id].label}${cfg.ai?.model ? ui.c.muted(` · ${cfg.ai.model}`) : ""}`],
+    ["AI", `${PROVIDERS[ai.id as ProviderId].label}${cfg.ai?.model ? ui.c.muted(` · ${cfg.ai.model}`) : ""}`],
   ]);
   if (cap <= 0) {
     ui.print();
@@ -181,7 +183,8 @@ async function find(cfg: Config) {
       ui.c.muted("Where        ") + b.locations.join(", "),
       ui.c.muted("Selling      ") + (b.offer || "—"),
       ui.c.muted("How many     ") + `${b.count} leads` + (me.cliLeadsFree ? "" : ui.c.muted(`  (up to ${b.count} credits)`)),
-      ui.c.muted("Agents       ") + ["Main", ...plan.agents.map((a) => AGENT_NAME[a]), "Documenter"].join(ui.c.line(" → ")),
+      ui.c.muted("Agents       ") + ["boss", ...plan.sources, "intelligence"].map((a) => AGENT_LABEL[a as AgentId]).join(ui.c.line(" → "))
+        + (plan.websites ? ui.c.muted("  · reads websites") : ""),
       ...(plan.reason ? [ui.c.muted("Why          ") + plan.reason] : []),
     ]);
     if (flags.yes) break;
@@ -193,7 +196,7 @@ async function find(cfg: Config) {
   }
 
   const result = await runPipeline(ai, plan);
-  if (!result.leads.length) return;
+  if (!result.leads.length && !result.found.length) return;
   present(result.leads);
 
   // Save to the member's account and log the usage
@@ -204,7 +207,7 @@ async function find(cfg: Config) {
     const sp = ui.spinner("Saving to your Masar dashboard");
     try {
       const saved = await api.save(cfg, {
-        brief: plan.brief, leads: toSave, found: result.found, agents: result.agentsRan,
+        brief: plan.brief, leads: toSave, collected: result.found, reports: result.reports,
         ai: { provider: ai.id, model: cfg.ai?.model ?? "" }, usage: ai.usage, durationMs: result.durationMs,
       });
       sp.done(`Saved ${saved.saved} leads to your dashboard` + (saved.free ? ui.c.muted("  ·  free on Premium") : ui.c.muted(`  ·  ${saved.charged} credits used, ${saved.creditsLeft} left`)));
@@ -230,6 +233,8 @@ async function doctor(cfg: Config) {
   try { await fetch(cfg.site + "/api/health", { signal: AbortSignal.timeout(10_000) }); ui.ok("Masar website reachable"); } catch { ui.fail(`Can't reach ${cfg.site}`); }
   if (cfg.token) { try { const me = await api.me(cfg); ui.ok(`Signed in as ${me.email}`); } catch (e) { ui.fail(e instanceof Error ? e.message : String(e)); } } else ui.warn("Not signed in (masar login)");
   for (const d of await detect()) (d.ready ? ui.ok : ui.info)(`${PROVIDERS[d.id].label}: ${d.detail}`);
+  ui.print();
+  for (const line of collectorStatus(cliEnv())) (line.ok ? ui.ok : ui.info)(line.text);
   if (cfg.ai) await testAi(cfg); else ui.warn("No AI chosen yet (masar ai)");
   ui.print();
 }
@@ -239,7 +244,7 @@ function help() {
   ui.facts([
     ["masar login", "Sign in with your Masar account (opens the website)"],
     ["masar ai", "Choose your AI: Claude, Codex, an API key or a local model"],
-    ["masar find", "Talk to the main agent and find leads"],
+    ["masar find", "Talk to the Boss agent and find leads"],
     ["masar find \"…\"", "Start with what you need, e.g. masar find \"coffee beans to cafes in Amman\""],
     ["masar status", "Your plan, credits and AI"],
     ["masar open", "Open your dashboard"],
@@ -247,9 +252,9 @@ function help() {
     ["masar logout", "Sign out on this computer"],
   ]);
   ui.print();
-  ui.info("Skip the questions: masar find --city \"Riyadh\" --industry clinics --offer \"…\" --count 20 --agents google,website,linkedin -y");
+  ui.info("Skip the questions: masar find --city \"Riyadh\" --industry clinics --offer \"…\" --count 20 --agents google_web,website,linkedin -y");
   ui.info(`Industries: ${INDUSTRIES.map((i) => i.key).join(", ")}`);
-  ui.info("Options: --out leads.csv  --json  --no-save  --no-browser  --model <name>  --url <local server>");
+  ui.info("Options: --out leads.csv  --json  --no-save  --no-websites  --no-browser  --model <name>  --url <local server>");
   ui.print();
 }
 
@@ -270,7 +275,7 @@ async function main() {
       ui.banner("Find the decision makers your next conversation depends on.");
       ui.say("Welcome to Masar. Two steps and you're ready:");
       ui.step(1, 2, "masar login   sign in with your Masar account");
-      ui.step(2, 2, "masar find    tell the main agent who you sell to");
+      ui.step(2, 2, "masar find    tell the Boss agent who you sell to");
       ui.print();
       if (await ui.confirm("Sign in now?")) { if (await login(cfg)) { if (!cfg.ai) await chooseAi(cfg); await find(cfg); } }
       break;

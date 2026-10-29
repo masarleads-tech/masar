@@ -1,4 +1,5 @@
 import { hostname, platform, release } from "node:os";
+import type { AgentReport } from "../../src/core";
 import type { Brief, Lead } from "../../src/lib/types";
 import type { Config } from "./config";
 import { VERSION } from "./version";
@@ -55,7 +56,7 @@ export const api = {
   me: (cfg: Config) => call<Me>(cfg, "GET", "/api/cli/me"),
   setAi: (cfg: Config, provider: string, model: string) => call(cfg, "PATCH", "/api/cli/me", { provider, model, device: deviceName() }),
   logout: (cfg: Config) => call(cfg, "DELETE", "/api/cli/me"),
-  save: (cfg: Config, body: { brief: Brief; leads: Lead[]; found: number; agents: string[]; ai: { provider: string; model: string };
+  save: (cfg: Config, body: { brief: Brief; leads: Lead[]; collected: Lead[]; reports: AgentReport[]; ai: { provider: string; model: string };
     usage: { inputTokens: number; outputTokens: number; webSearches: number }; durationMs: number }) =>
     call<SaveResult>(cfg, "POST", "/api/cli/leads", body),
 };

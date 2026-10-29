@@ -1,88 +1,50 @@
-import { dedupe, isExcluded, markChains, rescore } from "../../src/lib/lead";
+import { AGENT_LABEL, bossSearch, envFromProcess, type AgentReport, type CollectorEnv, type ProgressEvent } from "../../src/core";
 import type { Lead } from "../../src/lib/types";
 import type { AI } from "./ai/base";
-import { document } from "./agents/documenter";
-import { discover } from "./agents/google";
-import type { Finder, Plan } from "./agents/main";
-import { AGENT_LABEL, applySocial, runSocialAgent, type SocialAgent } from "./agents/social";
-import { visitAll, type SiteFacts } from "./agents/website";
+import type { Plan } from "./agents/main";
 import * as ui from "./ui";
+import { VERSION } from "./version";
 
-export interface RunResult { leads: Lead[]; found: number; agentsRan: string[]; sources: string[]; durationMs: number }
+export interface RunResult { leads: Lead[]; found: Lead[]; reports: AgentReport[]; sources: string[]; durationMs: number }
+
+const MARK: Record<AgentReport["status"], (s: string) => void> = {
+  ok: ui.ok, partial: ui.warn, empty: ui.info, error: ui.fail, timeout: ui.fail, unsupported: ui.info, disabled: ui.info, skipped: ui.info,
+};
+
+/** Prints one line per agent report; the same reports are saved with the search. */
+export function printReport(r: AgentReport) {
+  const what = r.agent === "connector" ? "" : r.phase === "discover" ? " search" : r.phase === "enrich" ? " checks" : " ranking";
+  const tag = r.status === "ok" ? "" : ui.c.muted(` [${r.status}]`);
+  MARK[r.status](`${AGENT_LABEL[r.agent]}${what}: ${r.message || `${r.found} done`}${tag}`);
+}
+
+/** Credentials for the official APIs, read from this computer's environment. Never sent to Masar. */
+export const cliEnv = (): CollectorEnv => envFromProcess(process.env, `Mozilla/5.0 (compatible; masar-cli/${VERSION})`);
 
 /**
- * The main agent's plan, carried out: Google agent → website agent → Instagram, Facebook and LinkedIn
- * agents (side by side, a few businesses at a time) → documenter.
+ * The Boss's plan, carried out by the shared core: the eligible collectors run side by side, each with
+ * its own time limit; a collector that fails or times out is reported and the rest of the search goes on.
  */
-export async function runPipeline(ai: AI, plan: Plan): Promise<RunResult> {
+export async function runPipeline(ai: AI, plan: Plan, opts: { env?: CollectorEnv; fetch?: typeof fetch; timeoutMs?: number; signal?: AbortSignal } = {}): Promise<RunResult> {
   const t0 = Date.now();
   const { brief } = plan;
-  const has = (a: Finder) => plan.agents.includes(a);
-  const ran = new Set<string>(["main"]);
-
-  // 1. Google agent
-  ui.heading("Google agent");
+  ui.heading("Boss");
   const sp = ui.spinner(`Looking for ${brief.industryCustom || brief.industry.replace(/_/g, " ")} in ${brief.locations.join(", ")}`);
-  const found = await discover(ai, brief, { useWeb: ai.web, queries: plan.queries, log: (s) => sp.update(s) });
-  ran.add("google");
-  let leads = markChains(dedupe(found.leads)).filter((l) => !isExcluded(l, brief.exclude)).map((l) => rescore(l, brief));
-  leads.sort((a, b) => b.fit - a.fit);
-  const total = leads.length;
-  if (!total) { sp.fail("No businesses found. Try another city or a broader kind of business."); return { leads: [], found: 0, agentsRan: [...ran], sources: found.sources, durationMs: Date.now() - t0 }; }
-  sp.done(`${total} businesses found (${found.sources.join(" + ") || "maps"})`);
-
-  // 2. Website agent, on the most promising ones
-  leads = leads.slice(0, Math.min(total, Math.max(brief.count * 2, 20), 120));
-  let facts = new Map<string, SiteFacts>();
-  if (has("website")) {
-    ui.heading("Website agent");
-    const withSite = leads.filter((l) => l.website).length;
-    const sw = ui.spinner(`Visiting ${withSite} business websites`);
-    const r = await visitAll(leads, (n) => sw.update(`Visiting websites (${n}/${leads.length})`));
-    leads = r.leads; facts = r.facts;
-    ran.add("website");
-    const ok = [...facts.values()].filter((f) => f.reachable).length;
-    sw.done(`Read ${ok} websites for emails, phones and social links`);
-  }
-
-  // 3. Social agents on the top leads
-  leads = leads.map((l) => rescore(l, brief)).sort((a, b) => b.fit - a.fit).slice(0, brief.count);
-  const social = (["instagram", "facebook", "linkedin"] as SocialAgent[]).filter((a) => has(a));
-  if (social.length) {
-    ui.heading(social.map((a) => AGENT_LABEL[a]).join(", ") + (social.length > 1 ? " agents" : " agent"));
-    if (!ai.web) {
-      ui.warn(`${ai.label} can't search the web, so these agents keep only the links each business published on its website or map listing.`);
-      ui.info("For full Instagram, Facebook and LinkedIn checks, use Claude, Codex or an API key: masar ai");
-      social.forEach((a) => ran.add(a));
-    } else {
-      const BATCH = 5;
-      const ss = ui.spinner(`Checking ${leads.length} businesses`);
-      let done = 0, failed = 0;
-      for (let i = 0; i < leads.length; i += BATCH) {
-        const batch = leads.slice(i, i + BATCH);
-        const results = await Promise.allSettled(social.map((a) => runSocialAgent(a, ai, brief, batch)));
-        results.forEach((r, k) => {
-          const agent = social[k];
-          if (r.status === "rejected") { failed++; return; }
-          ran.add(agent);
-          for (let j = 0; j < batch.length; j++) batch[j] = applySocial(agent, batch[j], r.value.get(batch[j].id));
-        });
-        for (let j = 0; j < batch.length; j++) leads[i + j] = { ...batch[j], enriched: true };
-        done += batch.length;
-        ss.update(`Checked ${done}/${leads.length} businesses on ${social.map((a) => AGENT_LABEL[a]).join(", ")}`);
-        if (failed >= social.length * 2 && done < leads.length) {
-          const first = results.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
-          ss.warn(`Stopped the social checks early: ${first?.reason instanceof Error ? first.reason.message : first?.reason ?? "errors"}`);
-          break;
-        }
-      }
-      if (failed < social.length * 2) ss.done(`Checked ${done} businesses on ${social.map((a) => AGENT_LABEL[a]).join(", ")}${failed ? ` (${failed} batches failed)` : ""}`);
-    }
-  }
-
-  // 4. Documenter
-  ui.heading("Documenter");
-  const ranked = await document(ai, brief, leads, facts, { useAi: true });
-  ran.add("documenter");
-  return { leads: ranked, found: total, agentsRan: [...ran], sources: found.sources, durationMs: Date.now() - t0 };
+  const seen = new Set<string>();
+  const onProgress = (e: ProgressEvent) => {
+    if (e.state === "started") { sp.update(e.message); return; }
+    if (!e.report) return;
+    // Batches report the same agent again; print each agent's first word per phase, the summary comes at the end.
+    const key = `${e.report.agent}:${e.report.phase}`;
+    if (e.report.phase === "discover" && !seen.has(key)) { seen.add(key); sp.update(`${AGENT_LABEL[e.report.agent]}: ${e.report.message}`); }
+  };
+  const r = await bossSearch(
+    { brief, options: { sources: plan.sources, websites: plan.websites, openStreetMap: true, timeoutMs: opts.timeoutMs ?? 10 * 60_000 } },
+    { llm: ai, env: opts.env ?? cliEnv(), fetch: opts.fetch, onProgress, signal: opts.signal, aiRanking: true },
+  );
+  if (!r.found.length) sp.fail("No businesses found. Try another city or a broader kind of business.");
+  else sp.done(`${r.found.length} businesses found, ${r.leads.length} checked and ranked`);
+  ui.heading("Agents");
+  for (const rep of r.reports) printReport(rep);
+  return { leads: r.leads, found: r.found, reports: r.reports, sources: r.sourcesUsed, durationMs: Date.now() - t0 };
 }
