@@ -1,10 +1,11 @@
 import { redisStatus } from "@/lib/redis";
 import { pineconeStatus } from "@/lib/pinecone";
+import { clerkStatus } from "@/lib/clerk";
 
 export const dynamic = "force-dynamic";
 
 /** Shows which settings the server can see (yes/no only, never the values), to debug a deploy. */
-export async function GET() {
+export async function GET(req: Request) {
   const has = (name: string) => !!process.env[name]?.trim();
   const shape = (name: string, prefix: string) => {
     const v = process.env[name]?.trim() ?? "";
@@ -18,6 +19,7 @@ export async function GET() {
     SUPABASE_SERVICE_ROLE_KEY: has("SUPABASE_SERVICE_ROLE_KEY") ? "ok" : "missing",
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: shape("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_"),
     CLERK_SECRET_KEY: shape("CLERK_SECRET_KEY", "sk_"),
+    CLERK: await clerkStatus(new URL(req.url).hostname),
     ANTHROPIC_API_KEY: has("ANTHROPIC_API_KEY") ? "ok" : "missing",
     POSTHOG_KEY: shape(has("POSTHOG_KEY") ? "POSTHOG_KEY" : "NEXT_PUBLIC_POSTHOG_KEY", "phc_"),
     POSTHOG_REGION: (process.env.POSTHOG_REGION || process.env.NEXT_PUBLIC_POSTHOG_REGION)?.trim() || "missing (uses us)",
