@@ -13,7 +13,7 @@ const pinecone = (async (input: string | URL | Request, init?: RequestInit) => {
   const url = String(input);
   calls.push(`${init?.method} ${url}`);
   const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { "content-type": "application/json" } });
-  if (url.endsWith("/indexes/masar-leads")) return indexState === "ready" ? json({ host: "masar-leads.svc.pinecone.io", status: { ready: true, state: "Ready" } }) : json({ error: "not found" }, 404);
+  if (url.endsWith("/indexes/masar-leads")) return indexState === "ready" ? json({ name: "masar-leads", host: "masar-leads.svc.pinecone.io", status: { ready: true, state: "Ready" }, embed: { model: "multilingual-e5-large", field_map: { text: "text" } } }) : json({ error: "not found" }, 404);
   if (url.endsWith("/indexes/create-for-model")) { indexState = "ready"; return json({ name: "masar-leads" }, 201); }
   if (url.endsWith("/upsert")) { upserts.push(String(init?.body)); return new Response(null, { status: 201 }); }
   if (url.endsWith("/search")) {
@@ -51,7 +51,7 @@ afterAll(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("Pinecone lead memory", () => {
   it("creates the index on /api/health when it's missing, then reports it ready", async () => {
     expect(await mod.pineconeStatus()).toMatch(/creating the index masar-leads/);
-    expect(await mod.pineconeStatus()).toBe("ok (index masar-leads ready)");
+    expect(await mod.pineconeStatus()).toBe("ok (index masar-leads ready, multilingual-e5-large)");
   });
 
   it("finds the closest Won lead from earlier searches and moves the lead up", async () => {
@@ -81,5 +81,27 @@ describe("Pinecone lead memory", () => {
   it("leaves leads unchanged when nothing looks alike", () => {
     const ls = [lead("a", "A", { rank: 10 }), lead("b", "B", { rank: 20 })];
     expect(mod.applyLookalikes(ls, new Map())).toBe(ls);
+  });
+});
+
+describe("Pinecone index made by Vercel's integration", () => {
+  it("finds the index by PINECONE_HOSTNAME and embeds into its own field", async () => {
+    vi.resetModules();
+    vi.stubEnv("PINECONE_HOSTNAME", "https://masar-abc.svc.pinecone.io");
+    const bodies: string[] = [];
+    vi.stubGlobal("fetch", (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/indexes")) return new Response(JSON.stringify({ indexes: [
+        { name: "other", host: "other.svc.pinecone.io", status: { ready: true }, embed: { field_map: { text: "text" } } },
+        { name: "masar", host: "masar-abc.svc.pinecone.io", status: { ready: true }, embed: { model: "multilingual-e5-large", field_map: { text: "chunk_text" } } },
+      ] }));
+      bodies.push(`${url} ${init?.body}`);
+      return new Response(null, { status: 201 });
+    }) as typeof fetch);
+    const m = await import("../src/lib/pinecone");
+    expect(await m.pineconeStatus()).toBe("ok (index masar ready, multilingual-e5-large)");
+    await m.rememberLeads("user_1", "s1", [lead("a", "Cafe", { rowId: "r1" })]);
+    expect(bodies[0]).toContain("https://masar-abc.svc.pinecone.io/records/namespaces/member-user_1/upsert");
+    expect(bodies[0]).toContain('"chunk_text":');
   });
 });
