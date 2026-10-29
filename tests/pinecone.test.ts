@@ -105,3 +105,31 @@ describe("Pinecone index made by Vercel's integration", () => {
     expect(bodies[0]).toContain('"chunk_text":');
   });
 });
+
+describe("Pinecone index without a model attached", () => {
+  it("embeds with Pinecone's hosted model and uses the vectors API", async () => {
+    vi.resetModules();
+    vi.stubEnv("PINECONE_HOSTNAME", "masar-xyz.svc.pinecone.io");
+    const seen: { url: string; body: Record<string, unknown> }[] = [];
+    vi.stubGlobal("fetch", (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const json = (b: unknown) => new Response(JSON.stringify(b), { headers: { "content-type": "application/json" } });
+      if (url.endsWith("/indexes")) return json({ indexes: [{ name: "masar", host: "masar-xyz.svc.pinecone.io", dimension: 1024, vector_type: "dense", status: { ready: true } }] });
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      seen.push({ url, body });
+      if (url.endsWith("/embed")) return json({ data: (body.inputs as unknown[]).map(() => ({ values: [0.1, 0.2] })) });
+      if (url.endsWith("/query")) return json({ matches: [{ id: "row-won", score: 0.9, metadata: { name: "Won Cafe", search_id: "s1" } }] });
+      return json({ upsertedCount: 1 });
+    }) as typeof fetch);
+    const m = await import("../src/lib/pinecone");
+    expect(await m.pineconeStatus()).toBe("ok (index masar ready, Masar embeds with multilingual-e5-large)");
+
+    await m.rememberLeads("user_1", "s1", [lead("a", "Cafe", { rowId: "r1" })]);
+    const up = seen.find((x) => x.url.endsWith("/vectors/upsert"))!;
+    expect(up.body).toMatchObject({ namespace: "member-user_1", vectors: [{ id: "r1", values: [0.1, 0.2], metadata: { name: "Cafe", search_id: "s1" } }] });
+    expect(seen.find((x) => x.url.endsWith("/embed") && (x.body.parameters as { input_type: string }).input_type === "passage")).toBeTruthy();
+
+    const found = await m.findLookalikes(db, "user_1", "s2", [lead("b", "New Cafe")]);
+    expect(found.get("b")).toEqual({ name: "Won Cafe", outcome: "won", score: 0.9 });
+  });
+});

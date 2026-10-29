@@ -4,8 +4,8 @@ import type { Lead } from "./types";
 
 /**
  * Pinecone: each member's lead memory. Every checked lead is kept as a short text in the member's own
- * namespace; Pinecone turns it into a vector itself (integrated embedding, multilingual so Arabic and
- * English names match). When a new lead looks like one the member already marked Won or Meeting, it gets
+ * namespace and turned into a vector by a Pinecone-hosted model (multilingual, so Arabic and English names
+ * match): by the index itself when it has a model attached, otherwise by Masar through Pinecone's embed API. When a new lead looks like one the member already marked Won or Meeting, it gets
  * a small boost and a "like your lead X" note, so the list learns from what actually closes.
  *
  * Off until PINECONE_API_KEY is set (server-only: the key can read and write every member's memory).
@@ -32,8 +32,31 @@ async function call(url: string, init: RequestInit = {}, ms = 2500): Promise<Res
   return fetch(url, { ...init, headers: { ...headers(), ...(init.headers as Record<string, string>) }, signal: AbortSignal.timeout(ms) });
 }
 
-interface IndexInfo { name: string; host?: string; status?: { ready?: boolean; state?: string }; embed?: { model?: string; field_map?: { text?: string } } }
-interface Index { host: string; field: string }
+interface IndexInfo {
+  name: string; host?: string; dimension?: number; vector_type?: string;
+  status?: { ready?: boolean; state?: string }; embed?: { model?: string; field_map?: { text?: string } };
+}
+/**
+ * `field`: the index embeds this text field itself (records API). Otherwise `model` is the hosted model
+ * Masar embeds with before saving and searching (vectors API), picked to match the index's dimension.
+ */
+type Index = { host: string; field: string; model?: undefined } | { host: string; field?: undefined; model: { name: string; dimension?: number } };
+
+/** Hosted models for an index without one attached: e5 is 1024 wide; llama can be cut to the index's width. */
+function modelFor(info: IndexInfo): { name: string; dimension?: number } | null {
+  if (info.vector_type && info.vector_type !== "dense") return null;
+  if (info.dimension === 1024) return { name: "multilingual-e5-large" };
+  if ([384, 512, 768, 2048].includes(info.dimension ?? 0)) return { name: "llama-text-embed-v2", dimension: info.dimension };
+  return null;
+}
+
+function toIndex(info: IndexInfo | null): Index | null {
+  if (!info?.status?.ready || !info.host) return null;
+  const field = info.embed?.field_map?.text;
+  if (field) return { host: info.host, field };
+  const model = modelFor(info);
+  return model ? { host: info.host, model } : null;
+}
 
 /** Vercel's Pinecone integration sets PINECONE_HOSTNAME for the index it made; then that index is used, whatever its name. */
 const HOSTNAME = env("PINECONE_HOSTNAME").replace(/^https?:\/\//, "").replace(/\/+$/, "");
@@ -67,10 +90,7 @@ let indexPromise: Promise<Index | null> | null = null;
 /** The index's address and the field Pinecone embeds, looked up once per server. */
 async function getIndex(): Promise<Index | null> {
   if (!pineconeEnabled) return null;
-  indexPromise ??= lookup().then(({ info }) => {
-    const field = info?.embed?.field_map?.text;
-    return info?.status?.ready && info.host && field ? { host: info.host, field } : null;
-  }).catch((e) => { console.error("[masar] Pinecone:", e instanceof Error ? e.message : e); return null; });
+  indexPromise ??= lookup().then(({ info }) => toIndex(info)).catch((e) => { console.error("[masar] Pinecone:", e instanceof Error ? e.message : e); return null; });
   const index = await indexPromise;
   if (!index) indexPromise = null; // not ready yet or failed: ask again next time
   return index;
@@ -86,6 +106,59 @@ export function leadText(l: Lead): string {
 /** Pinecone namespaces: one per member, so nobody's memory mixes with another's. */
 const space = (userId: string) => encodeURIComponent(`member-${userId}`);
 
+/** Vectors from Pinecone's hosted model: "passage" for what is saved, "query" for what is searched. */
+async function embed(model: { name: string; dimension?: number }, texts: string[], kind: "passage" | "query"): Promise<number[][]> {
+  const parameters = { input_type: kind, truncate: "END", ...(model.dimension ? { dimension: model.dimension } : {}) };
+  const res = await call(`${CONTROL}/embed`, { method: "POST", body: JSON.stringify({ model: model.name, parameters, inputs: texts.map((text) => ({ text })) }) }, 5000);
+  if (!res.ok) throw new Error(`embed ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const d = (await res.json()) as { data?: { values?: number[] }[] };
+  const out = (d.data ?? []).map((x) => x.values ?? []);
+  if (out.length !== texts.length || out.some((v) => !v.length)) throw new Error("embed returned no vectors");
+  return out;
+}
+
+type Meta = { name: string; city: string; search_id: string };
+
+async function upsert(index: Index, userId: string, records: { id: string; text: string; meta: Meta }[]) {
+  let res: Response;
+  if (index.model === undefined) {
+    const body = records.map((r) => JSON.stringify({ _id: r.id, [index.field]: r.text, ...r.meta })).join("\n");
+    res = await call(`https://${index.host}/records/namespaces/${space(userId)}/upsert`, { method: "POST", body, headers: { "content-type": "application/x-ndjson" } }, 5000);
+  } else {
+    const values = await embed(index.model, records.map((r) => r.text), "passage");
+    const vectors = records.map((r, i) => ({ id: r.id, values: values[i], metadata: r.meta }));
+    res = await call(`https://${index.host}/vectors/upsert`, { method: "POST", body: JSON.stringify({ namespace: decodeURIComponent(space(userId)), vectors }) }, 5000);
+  }
+  if (!res.ok) throw new Error(`upsert ${res.status}`);
+}
+
+interface Hit { id: string; score: number; name: string; searchId: string }
+
+/** The closest saved leads to each text, best first. */
+async function search(index: Index, userId: string, texts: string[], topK: number): Promise<Hit[][]> {
+  if (index.model === undefined) {
+    return Promise.all(texts.map(async (text) => {
+      const res = await call(`https://${index.host}/records/namespaces/${space(userId)}/search`, {
+        method: "POST", body: JSON.stringify({ query: { inputs: { text }, top_k: topK }, fields: ["name", "search_id"] }),
+      });
+      if (res.status === 404) return []; // a new member has no memory yet
+      if (!res.ok) throw new Error(`search ${res.status}`);
+      const d = (await res.json()) as { result?: { hits?: { _id: string; _score: number; fields?: { name?: string; search_id?: string } }[] } };
+      return (d.result?.hits ?? []).map((h) => ({ id: h._id, score: h._score, name: h.fields?.name ?? "", searchId: h.fields?.search_id ?? "" }));
+    }));
+  }
+  const vectors = await embed(index.model, texts, "query");
+  return Promise.all(vectors.map(async (vector) => {
+    const res = await call(`https://${index.host}/query`, {
+      method: "POST", body: JSON.stringify({ namespace: decodeURIComponent(space(userId)), vector, topK, includeMetadata: true }),
+    });
+    if (res.status === 404) return [];
+    if (!res.ok) throw new Error(`query ${res.status}`);
+    const d = (await res.json()) as { matches?: { id: string; score: number; metadata?: { name?: string; search_id?: string } }[] };
+    return (d.matches ?? []).map((m) => ({ id: m.id, score: m.score, name: m.metadata?.name ?? "", searchId: m.metadata?.search_id ?? "" }));
+  }));
+}
+
 /** Keeps saved leads in the member's memory. Record id = the leads table row id. */
 export async function rememberLeads(userId: string, searchId: string, leads: Lead[]) {
   const rows = leads.filter((l) => l.rowId);
@@ -93,9 +166,7 @@ export async function rememberLeads(userId: string, searchId: string, leads: Lea
   try {
     const index = await getIndex();
     if (!index) return;
-    const body = rows.map((l) => JSON.stringify({ _id: l.rowId, [index.field]: leadText(l), name: l.name.slice(0, 200), city: l.city.slice(0, 120), search_id: searchId })).join("\n");
-    const res = await call(`https://${index.host}/records/namespaces/${space(userId)}/upsert`, { method: "POST", body, headers: { "content-type": "application/x-ndjson" } }, 5000);
-    if (!res.ok) throw new Error(`upsert ${res.status}`);
+    await upsert(index, userId, rows.map((l) => ({ id: l.rowId!, text: leadText(l), meta: { name: l.name.slice(0, 200), city: l.city.slice(0, 120), search_id: searchId } })));
   } catch (e) {
     console.error("[masar] Pinecone:", e instanceof Error ? e.message : e);
   }
@@ -113,7 +184,6 @@ export async function forgetSearch(userId: string, searchId: string) {
 }
 
 export interface Lookalike { name: string; outcome: "won" | "meeting"; score: number }
-interface Hit { _id: string; _score: number; fields?: { name?: string; search_id?: string } }
 
 /**
  * For each lead, the closest lead from the member's earlier searches that they marked Won or Meeting.
@@ -124,22 +194,15 @@ export async function findLookalikes(db: SupabaseClient, userId: string, searchI
   try {
     const index = await getIndex();
     if (!index || !leads.length) return out;
-    const hits = await Promise.all(leads.map(async (l) => {
-      const res = await call(`https://${index.host}/records/namespaces/${space(userId)}/search`, {
-        method: "POST", body: JSON.stringify({ query: { inputs: { text: leadText(l) }, top_k: 10 }, fields: ["name", "search_id"] }),
-      });
-      if (res.status === 404) return []; // a new member has no memory yet
-      if (!res.ok) throw new Error(`search ${res.status}`);
-      const d = (await res.json()) as { result?: { hits?: Hit[] } };
-      return (d.result?.hits ?? []).filter((h) => h._score >= LOOKALIKE_MIN && h.fields?.search_id !== searchId && normName(h.fields?.name ?? "") !== normName(l.name));
-    }));
-    const ids = [...new Set(hits.flat().map((h) => h._id))];
+    const found = await search(index, userId, leads.map(leadText), 10);
+    const hits = found.map((hs, i) => hs.filter((h) => h.score >= LOOKALIKE_MIN && h.searchId !== searchId && normName(h.name) !== normName(leads[i].name)));
+    const ids = [...new Set(hits.flat().map((h) => h.id))];
     if (!ids.length) return out;
     const { data } = await db.from("leads").select("id, outcome").in("id", ids).in("outcome", ["won", "meeting"]);
     const outcome = new Map((data ?? []).map((r) => [r.id as string, r.outcome as Lookalike["outcome"]]));
     leads.forEach((l, i) => {
-      const best = hits[i].find((h) => outcome.has(h._id)); // hits come best first
-      if (best) out.set(l.id, { name: best.fields?.name ?? "", outcome: outcome.get(best._id)!, score: Math.round(best._score * 100) / 100 });
+      const best = hits[i].find((h) => outcome.has(h.id)); // hits come best first
+      if (best) out.set(l.id, { name: best.name, outcome: outcome.get(best.id)!, score: Math.round(best.score * 100) / 100 });
     });
   } catch (e) {
     console.error("[masar] Pinecone:", e instanceof Error ? e.message : e);
@@ -165,8 +228,12 @@ export async function pineconeStatus(): Promise<string> {
     const { info, created } = await lookup();
     if (created) return created.ok ? `creating the index ${INDEX_NAME}, check again in a minute` : `could not create the index (${created.status}: ${(await created.text()).slice(0, 120)})`;
     if (!info) return `no index at PINECONE_HOSTNAME (${HOSTNAME}) in this API key's project`;
-    if (!info.embed?.field_map?.text) return `index ${info.name} has no embedding model: make a new one with multilingual-e5-large`;
-    return info.status?.ready ? `ok (index ${info.name} ready, ${info.embed.model})` : `index ${info.name} is starting (${info.status?.state ?? "not ready"}), check again in a minute`;
+    if (!info.status?.ready) return `index ${info.name} is starting (${info.status?.state ?? "not ready"}), check again in a minute`;
+    if (info.embed?.field_map?.text) return `ok (index ${info.name} ready, ${info.embed.model})`;
+    const model = modelFor(info);
+    if (!model) return `index ${info.name} can't be used (${info.vector_type ?? "dense"}, ${info.dimension ?? "?"} dimensions): make a dense index with multilingual-e5-large`;
+    await embed(model, ["test"], "query"); // proves the key may use Pinecone's hosted models
+    return `ok (index ${info.name} ready, Masar embeds with ${model.name})`;
   } catch (e) {
     if (e instanceof PineconeError && (e.status === 401 || e.status === 403)) return "the API key was rejected";
     return `cannot connect: ${e instanceof Error ? e.message : "unknown error"}`;
