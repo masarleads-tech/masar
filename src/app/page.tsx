@@ -68,6 +68,11 @@ export default function Home() {
         if (found?.leads.length) {
           show(found.search.brief, found.leads, found.search.sources, found.search.id);
           if (wanted) setView("results");
+        } else if (config.defaults) {
+          // A new search starts from the member's setup answers (industry, cities, leads per week).
+          const b = { ...DEFAULT_BRIEF, ...config.defaults };
+          setBrief(b);
+          setText((x) => ({ ...x, locations: b.locations.join(", ") }));
         }
       })().catch(() => {});
     } else {
@@ -139,6 +144,7 @@ export default function Home() {
             total.inputTokens += r.usage.inputTokens;
             total.outputTokens += r.usage.outputTokens;
             total.webSearches += r.usage.webSearches;
+            if (r.warnings?.length) setErrors((x) => [...x, ...r.warnings!.filter((w) => !x.includes(w))]);
             if (r.creditsLeft === 0) ctrl.abort();
           } catch (err) {
             if (ctrl.signal.aborted) return;

@@ -5,6 +5,9 @@ import { supabaseServer } from "./supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "./supabase/env";
 import type { Brief } from "./types";
+import { envFromProcess } from "../core/collectors";
+import { parseBrief, SearchOptionsSchema } from "../core/schemas";
+import { claudeConnector } from "./claude";
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {
@@ -67,25 +70,17 @@ export async function keysFrom(req: Request, account: Account) {
   return { anthropic: new Anthropic({ apiKey: anthropicKey, maxRetries: 2 }), googleKey, ownKey };
 }
 
-export function cleanBrief(raw: unknown): Brief {
-  const b = (raw ?? {}) as Partial<Brief>;
-  const list = (v: unknown) => (Array.isArray(v) ? v.map(String).map((s) => s.trim()).filter(Boolean) : []);
-  return {
-    clientName: String(b.clientName ?? "").slice(0, 120),
-    offer: String(b.offer ?? "").slice(0, 1000),
-    targetType: b.targetType === "individual" ? "individual" : "business",
-    industry: String(b.industry ?? "cosmetics_retail"),
-    industryCustom: String(b.industryCustom ?? "").slice(0, 200),
-    locations: list(b.locations).slice(0, 5),
-    size: (["any", "independent", "chain"] as const).includes(b.size as never) ? (b.size as Brief["size"]) : "any",
-    positioning: (["any", "premium", "mid", "budget"] as const).includes(b.positioning as never) ? (b.positioning as Brief["positioning"]) : "any",
-    channel: (["phone", "email", "social", "visit", "any"] as const).includes(b.channel as never) ? (b.channel as Brief["channel"]) : "phone",
-    mustHave: list(b.mustHave).filter((m): m is Brief["mustHave"][number] => ["phone", "email", "website", "social"].includes(m)),
-    goodSignals: list(b.goodSignals).slice(0, 10),
-    exclude: list(b.exclude).slice(0, 30),
-    count: Math.max(5, Math.min(200, Number(b.count) || 50)),
-  };
+/** The search criteria from a request, validated by the shared schema (src/core/schemas.ts). */
+export const cleanBrief = (raw: unknown): Brief => parseBrief(raw);
+
+/** What the Boss needs on the server: the Claude connector and the collectors' credentials (server-side only). */
+export async function searchDeps(req: Request, account: Account) {
+  const keys = await keysFrom(req, account);
+  const env = { ...envFromProcess(process.env, SERVER_UA), googleMapsKey: keys.googleKey || undefined };
+  const options = SearchOptionsSchema.parse({ openStreetMap: process.env.MASAR_USE_OSM === "true" });
+  return { ...keys, llm: claudeConnector(keys.anthropic), env, options };
 }
+const SERVER_UA = `Mozilla/5.0 (compatible; MasarBot/1.0; +${process.env.NEXT_PUBLIC_SITE_URL || "https://masar-umber-two.vercel.app"})`;
 
 export function errorResponse(e: unknown) {
   if (e instanceof HttpError) return Response.json({ error: e.message }, { status: e.status });

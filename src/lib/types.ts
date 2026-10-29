@@ -85,12 +85,17 @@ export interface SearchSummary {
   leadCount: number;
 }
 
+/** One agent's report from a search (see src/core/schemas.ts). */
+export type { AgentReport } from "../core/schemas";
+
 export interface DiscoverResponse {
   /** The saved search these leads belong to; null when accounts are off. */
   searchId: string | null;
   leads: Lead[];
   sourcesUsed: string[];
   warnings: string[];
+  /** What each agent did: ok, partial, error, timeout, unsupported or disabled, with a reason. */
+  agents?: import("../core/schemas").AgentReport[];
 }
 
 export interface EnrichResponse {
@@ -98,6 +103,8 @@ export interface EnrichResponse {
   usage: { inputTokens: number; outputTokens: number; webSearches: number };
   /** Leads left on the account after this batch; null when accounts are off. */
   creditsLeft: number | null;
+  warnings?: string[];
+  agents?: import("../core/schemas").AgentReport[];
 }
 
 /** The signed-in user's account, as /api/config returns it. */
@@ -118,4 +125,6 @@ export interface SiteConfig {
   allowUserKeys: boolean;
   hasServerClaudeKey: boolean;
   hasServerGoogleKey: boolean;
+  /** Starting search criteria from the member's setup tour answers. */
+  defaults?: Partial<Brief>;
 }
