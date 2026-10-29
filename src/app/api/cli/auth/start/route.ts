@@ -1,4 +1,5 @@
 import { errorResponse } from "@/lib/server";
+import { clientIp, rateLimit } from "@/lib/redis";
 import { newDeviceCode, newUserCode, serviceDb, sha256 } from "@/lib/cli";
 
 const TTL = 10 * 60; // seconds
@@ -9,6 +10,7 @@ const TTL = 10 * 60; // seconds
  */
 export async function POST(req: Request) {
   try {
+    await rateLimit("cliAuthStart", clientIp(req));
     const body = (await req.json().catch(() => ({}))) as { client?: unknown };
     const client = String(body.client ?? "").replace(/[^\p{L}\p{N} ._()\-/]/gu, "").slice(0, 80);
     const db = serviceDb();

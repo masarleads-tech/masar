@@ -2,6 +2,7 @@ import { bossEnrich } from "@/core/boss";
 import { saveLeads } from "@/core/intelligence";
 import { parseIncomingLead } from "@/core/schemas";
 import { chargeCredits, cleanBrief, errorResponse, noCreditsError, requireUser, searchDeps, HttpError } from "@/lib/server";
+import { cachedFetch, clientIp, rateLimit } from "@/lib/redis";
 import type { EnrichResponse, Lead } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -14,6 +15,7 @@ export const maxDuration = 300;
 export async function POST(req: Request) {
   try {
     const account = await requireUser();
+    await rateLimit("enrich", account.userId ?? clientIp(req));
     const body = (await req.json()) as { brief: unknown; leads: unknown[]; searchId?: string | null };
     const brief = cleanBrief(body.brief);
     if (!Array.isArray(body.leads) || body.leads.length === 0 || body.leads.length > 5) {
@@ -27,7 +29,7 @@ export async function POST(req: Request) {
       if (account.credits <= 0) throw noCreditsError();
       leads = leads.slice(0, account.credits);
     }
-    const result = await bossEnrich({ brief, options }, leads, { llm, env, signal: req.signal });
+    const result = await bossEnrich({ brief, options }, leads, { llm, env, fetch: cachedFetch(), signal: req.signal });
     let checked = result.leads;
     let creditsLeft = account.credits;
     if (!ownKey && account.credits !== null) {

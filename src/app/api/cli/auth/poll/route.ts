@@ -1,4 +1,5 @@
 import { errorResponse } from "@/lib/server";
+import { clientIp, rateLimit } from "@/lib/redis";
 import { newToken, serviceDb, sha256 } from "@/lib/cli";
 
 /**
@@ -7,6 +8,7 @@ import { newToken, serviceDb, sha256 } from "@/lib/cli";
  */
 export async function POST(req: Request) {
   try {
+    await rateLimit("cliAuthPoll", clientIp(req));
     const body = (await req.json().catch(() => ({}))) as { device_code?: unknown };
     const deviceHash = sha256(String(body.device_code ?? ""));
     const db = serviceDb();

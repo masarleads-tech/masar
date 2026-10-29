@@ -1,5 +1,9 @@
+import { redisStatus } from "@/lib/redis";
+
+export const dynamic = "force-dynamic";
+
 /** Shows which settings the server can see (yes/no only, never the values), to debug a deploy. */
-export function GET() {
+export async function GET() {
   const has = (name: string) => !!process.env[name]?.trim();
   const shape = (name: string, prefix: string) => {
     const v = process.env[name]?.trim() ?? "";
@@ -20,5 +24,6 @@ export function GET() {
     SENTRY_AUTH_TOKEN: shape("SENTRY_AUTH_TOKEN", "sntrys_"),
     SENTRY_ORG: has("SENTRY_ORG") ? "ok" : "missing",
     SENTRY_PROJECT: has("SENTRY_PROJECT") ? "ok" : "missing",
+    UPSTASH_REDIS: await redisStatus(),
   });
 }
