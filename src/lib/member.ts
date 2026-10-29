@@ -7,7 +7,7 @@ import { requireUser } from "./server";
 import { accountsEnabled } from "./supabase/env";
 
 /** Pages built as plain HTML (setup tour, dashboard, download) live in src/html and are sent by route handlers. */
-export async function htmlPage(name: "home" | "welcome" | "dashboard" | "download", data?: unknown) {
+export async function htmlPage(name: "home" | "welcome" | "dashboard" | "cli", data?: unknown) {
   let html = await readFile(path.join(process.cwd(), "src/html", `${name}.html`), "utf8");
   html = html.replace('href="app.css"', 'href="/app/app.css"');
   const json = data === undefined ? "" : JSON.stringify(data).replace(/</g, "\\u003c").replace(/\u2028|\u2029/g, "");

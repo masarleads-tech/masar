@@ -57,6 +57,7 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
 .dl-opt .oi svg { width: 22px; height: 22px; }
 .dl-opt .ot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .dl-opt .ot small { color: var(--muted); font-size: 12.5px; }
+.soon-tag { flex: none; padding: 5px 11px; border-radius: 99px; font-size: 12.5px; font-weight: 700; background: rgba(216, 166, 87, 0.14); color: #d8a657; }
 .dl-note { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: rgba(114, 183, 167, 0.08); color: #cfe0dc; font-size: 14px; }
 .dl-note ol { margin: 6px 0 0; padding-inline-start: 20px; }
 .actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 28px; }
@@ -150,13 +151,13 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
       e3: "الخطوة 2 من 5", h3: "وين عملاؤك؟", p3: "اختر المدن. بحث واحد يقدر يغطيها كلها.",
       e4: "الخطوة 3 من 5", h4: "وش هدفك؟", p4: "نستخدمه عشان نوريك تقدمك ونرتّب العملاء لك.", gLeads: "عملاء جدد بالأسبوع", gMeet: "اجتماعات بالشهر", gDeal: "متوسط قيمة الصفقة", gCur: "العملة",
       e5: "الخطوة 4 من 5", h5: "اربط أدواتك", p5: "خل العملاء يوصلون للمكان اللي تشتغل فيه. اختياري، وتقدر تسويه من لوحة التحكم.", connect: "ربط", connected: "مربوط",
-      e6: "الخطوة 5 من 5", h6: "ثبّت مسار على جهازك", p6: "استخدمه من المتصفح، أو حمّله على كمبيوترك وجوالك.", download: "تحميل", yours: "جهازك",
+      e6: "الخطوة 5 من 5", h6: "مسار جاي لجهازك", p6: "استخدم مسار من المتصفح الحين. أداة سطر الأوامر وتطبيقات الكمبيوتر والجوال جاية قريباً.", soonTag: "قريباً", download: "تحميل", yours: "جهازك",
       soon: "تطبيق الكمبيوتر قيد التطوير. بنرسل لك رابط التحميل على إيميلك أول ما يجهز.", iosHow: "ثبّته على الآيفون:", iosSteps: ["افتح موقع مسار في سفاري", "اضغط زر المشاركة", "اختر «إضافة إلى الشاشة الرئيسية»"], andHow: "ثبّته على الأندرويد:", andSteps: ["افتح موقع مسار في كروم", "اضغط القائمة ⋮", "اختر «تثبيت التطبيق»"],
       saved: "تم حفظ إعداداتك",
       ind: ["مطاعم ومقاهي", "عيادات", "عقارات", "مقاولات", "تجزئة", "خدمات الشركات", "تعليم وتدريب", "فنادق وسياحة", "صالونات وتجميل", "لوجستيات"],
       countries: [["الأردن", ["عمّان", "إربد", "الزرقاء", "العقبة"]], ["السعودية", ["الرياض", "جدة", "الدمام", "مكة", "المدينة"]], ["الإمارات", ["دبي", "أبوظبي", "الشارقة"]], ["قطر", ["الدوحة"]], ["الكويت", ["الكويت"]], ["البحرين", ["المنامة"]], ["عُمان", ["مسقط"]]],
       conns: [["WhatsApp Business", "أرسل العملاء الساخنين لواتسابك", "#25a366", "WA"], ["Gmail", "تابع العملاء من إيميلك", "#c5483b", "G"], ["Google Sheets", "صدّر العملاء تلقائياً لجدول", "#1e8e4f", "S"], ["HubSpot", "أضف العملاء لنظام CRM", "#e2683c", "H"]],
-      os: { mac: ["ماك", "macOS 12 أو أحدث"], win: ["ويندوز", "Windows 10 و 11"], lin: ["لينكس", "Ubuntu و Debian"], iph: ["آيفون", "iOS 16 أو أحدث"], and: ["أندرويد", "Android 10 أو أحدث"] }
+      os: { cli: ["مسار CLI", "لمشتركي Claude Pro و Max، بدون مفتاح API"], mac: ["ماك", "macOS 12 أو أحدث"], win: ["ويندوز", "Windows 10 و 11"], lin: ["لينكس", "Ubuntu و Debian"], iph: ["آيفون", "iOS 16 أو أحدث"], and: ["أندرويد", "Android 10 أو أحدث"] }
     },
     en: {
       langBtn: "العربية", skip: "Skip", back: "Back", next: "Next", start: "Let's start", finish: "Go to dashboard",
@@ -165,13 +166,13 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
       e3: "Step 2 of 5", h3: "Where are your customers?", p3: "Pick the cities. One search can cover all of them.",
       e4: "Step 3 of 5", h4: "What's your goal?", p4: "We use it to show your progress and rank leads for you.", gLeads: "New leads per week", gMeet: "Meetings per month", gDeal: "Average deal size", gCur: "Currency",
       e5: "Step 4 of 5", h5: "Connect your tools", p5: "Send leads to where you already work. Optional, and you can do it later from the dashboard.", connect: "Connect", connected: "Connected",
-      e6: "Step 5 of 5", h6: "Install Masar on your device", p6: "Use it in your browser, or install it on your computer and phone.", download: "Download", yours: "Your device",
+      e6: "Step 5 of 5", h6: "Masar is coming to your devices", p6: "Use Masar in your browser now. The command-line tool and the computer and phone apps are coming soon.", soonTag: "Coming soon", download: "Download", yours: "Your device",
       soon: "The computer app is still being built. We'll email you the download link as soon as it's ready.", iosHow: "Install on iPhone:", iosSteps: ["Open the Masar site in Safari", "Tap the Share button", "Choose “Add to Home Screen”"], andHow: "Install on Android:", andSteps: ["Open the Masar site in Chrome", "Tap the ⋮ menu", "Choose “Install app”"],
       saved: "Your settings are saved",
       ind: ["Restaurants & cafés", "Clinics", "Real estate", "Contracting", "Retail", "Business services", "Education & training", "Hotels & tourism", "Salons & beauty", "Logistics"],
       countries: [["Jordan", ["Amman", "Irbid", "Zarqa", "Aqaba"]], ["Saudi Arabia", ["Riyadh", "Jeddah", "Dammam", "Makkah", "Madinah"]], ["UAE", ["Dubai", "Abu Dhabi", "Sharjah"]], ["Qatar", ["Doha"]], ["Kuwait", ["Kuwait City"]], ["Bahrain", ["Manama"]], ["Oman", ["Muscat"]]],
       conns: [["WhatsApp Business", "Send hot leads to your WhatsApp", "#25a366", "WA"], ["Gmail", "Follow up from your inbox", "#c5483b", "G"], ["Google Sheets", "Export leads to a sheet automatically", "#1e8e4f", "S"], ["HubSpot", "Add leads to your CRM", "#e2683c", "H"]],
-      os: { mac: ["Mac", "macOS 12 or later"], win: ["Windows", "Windows 10 and 11"], lin: ["Linux", "Ubuntu and Debian"], iph: ["iPhone", "iOS 16 or later"], and: ["Android", "Android 10 or later"] }
+      os: { cli: ["Masar CLI", "For Claude Pro and Max users, no API key needed"], mac: ["Mac", "macOS 12 or later"], win: ["Windows", "Windows 10 and 11"], lin: ["Linux", "Ubuntu and Debian"], iph: ["iPhone", "iOS 16 or later"], and: ["Android", "Android 10 or later"] }
     }
   };
   $("#brand").innerHTML = M.mark(32) + '<span class="word"><b>masar</b><small>مسار</small></span>';
@@ -214,6 +215,7 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
     mac: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.9-3-.8C6.9 7.4 5.4 8.3 4.6 9.7c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 3 2.4 1.2 0 1.6-.8 3.1-.8s1.8.8 3.1.8c1.3 0 2.1-1.2 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7 0 0-2.7-1-2.8-4.1zM14 5.6c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z"/></svg>',
     win: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>',
     lin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c-2.2 0-3.3 1.8-3.3 4.2 0 1.5-.4 2.6-1.3 3.9C6.2 12.8 5 14.6 5 16.6c0 .7.2 1.3.5 1.8"/><path d="M12 3c2.2 0 3.3 1.8 3.3 4.2 0 1.5.4 2.6 1.3 3.9 1.2 1.7 2.4 3.5 2.4 5.5 0 .7-.2 1.3-.5 1.8"/><path d="M5.5 18.4c.9 1.4 2.8 1.1 3.6 2.1.6.8 1.6 1 2.9 1s2.3-.2 2.9-1c.8-1 2.7-.7 3.6-2.1"/></svg>',
+    cli: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9l3 3-3 3M12.5 15H17"/></svg>',
     iph: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
     and: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 16V10a6 6 0 0 1 12 0v6z"/><path d="M8 4.5 9.2 6.3M16 4.5l-1.2 1.8M6 16h12v2.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 18.5z"/></svg>'
   };
@@ -238,11 +240,9 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
       setup.conns = on ? setup.conns.filter((x) => x !== i) : setup.conns.concat(i);
       b.classList.toggle("mint", !on); b.textContent = !on ? d.connected : d.connect;
     }));
-    const order = ["iph", "and"].includes(myOS) ? ["iph", "and", "mac", "win", "lin"] : ["mac", "win", "lin", "iph", "and"];
-    $("#dl").innerHTML = order.map((k) => '<div class="card dl-opt' + (k === myOS ? " mine" : "") + '"><span class="oi">' + OSI[k] + '</span><span class="ot"><b>' + d.os[k][0] + "</b><small>" + d.os[k][1] + (k === myOS ? " · " + d.yours : "") + '</small></span><button type="button" class="btn sm ' + (k === myOS ? "mint" : "") + '" data-os="' + k + '">' + d.download + "</button></div>").join("");
-    $$("#dl [data-os]").forEach((b) => b.addEventListener("click", () => {
-      persist(true).then(() => { location.href = "/download?os=" + b.dataset.os + "&from=tour"; }, failed);
-    }));
+    // The CLI and the apps are not out yet: show them with a "coming soon" tag
+    const order = ["iph", "and"].includes(myOS) ? ["cli", "iph", "and", "mac", "win", "lin"] : ["cli", "mac", "win", "lin", "iph", "and"];
+    $("#dl").innerHTML = order.map((k) => '<div class="card dl-opt' + (k === "cli" ? " mine" : "") + '"><span class="oi">' + OSI[k] + '</span><span class="ot"><b>' + d.os[k][0] + "</b><small>" + d.os[k][1] + '</small></span><span class="soon-tag">' + d.soonTag + "</span></div>").join("");
     $("#gLeads").value = setup.leads; $("#gMeet").value = setup.meet; $("#gDeal").value = setup.deal; $("#gCur").value = setup.cur; $("#ideal").value = setup.ideal;
     sync();
     go(cur, true);

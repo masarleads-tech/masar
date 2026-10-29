@@ -1,6 +1,4 @@
-import { htmlPage } from "@/lib/member";
-
-/** "Your download has started" page with install steps. Public: anyone can download the app. */
-export async function GET() {
-  return htmlPage("download");
+/** The apps are not out yet: old download links go to the CLI page, which lists everything that's coming. */
+export async function GET(req: Request) {
+  return Response.redirect(new URL("/cli", req.url), 307);
 }

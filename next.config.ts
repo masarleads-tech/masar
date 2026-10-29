@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/dashboard": ["./src/html/**"],
     "/welcome": ["./src/html/**"],
-    "/download": ["./src/html/**"],
+    "/cli": ["./src/html/**"],
     "/home": ["./src/html/**"],
   },
 };
