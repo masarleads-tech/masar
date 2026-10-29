@@ -14,5 +14,7 @@ export function GET() {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: shape("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_"),
     CLERK_SECRET_KEY: shape("CLERK_SECRET_KEY", "sk_"),
     ANTHROPIC_API_KEY: has("ANTHROPIC_API_KEY") ? "ok" : "missing",
+    NEXT_PUBLIC_POSTHOG_KEY: shape("NEXT_PUBLIC_POSTHOG_KEY", "phc_"),
+    NEXT_PUBLIC_POSTHOG_REGION: process.env.NEXT_PUBLIC_POSTHOG_REGION?.trim() || "missing (uses us)",
   });
 }

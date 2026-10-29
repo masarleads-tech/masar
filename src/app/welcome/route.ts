@@ -8,7 +8,8 @@ export async function GET(req: Request) {
   if (!me) return toLogin(req, "/welcome", true);
   try {
     const setup = await ensureSetup(me.supabase, me.userId);
-    return htmlPage("welcome", { setup, username: setup.username ?? null });
+    return htmlPage("welcome", { setup, username: setup.username ?? null },
+      { id: me.userId, email: setup.email as string | null, username: setup.username as string | null });
   } catch (e) {
     console.error("[masar] welcome:", e instanceof Error ? e.message : e);
     // For example before the new tables are added in Supabase: fall back to the search app.

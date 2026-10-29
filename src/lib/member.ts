@@ -3,13 +3,16 @@ import path from "node:path";
 import { currentUser } from "@clerk/nextjs/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { posthogScript, type Visitor } from "./analytics";
 import { requireUser } from "./server";
 import { accountsEnabled } from "./supabase/env";
 
 /** Pages built as plain HTML (setup tour, dashboard, download) live in src/html and are sent by route handlers. */
-export async function htmlPage(name: "home" | "welcome" | "dashboard" | "cli" | "cli-connect", data?: unknown) {
+export async function htmlPage(name: "home" | "welcome" | "dashboard" | "cli" | "cli-connect", data?: unknown, who?: Visitor) {
   let html = await readFile(path.join(process.cwd(), "src/html", `${name}.html`), "utf8");
   html = html.replace('href="app.css"', 'href="/app/app.css"');
+  const analytics = posthogScript(who);
+  if (analytics) html = html.replace("</head>", `<script>${analytics}</script>\n</head>`);
   const json = data === undefined ? "" : JSON.stringify(data).replace(/</g, "\\u003c").replace(/\u2028|\u2029/g, "");
   html = html.replace('<script src="app.js"></script>',
     (json ? `<script>window.MASAR_DATA=${json};</script>` : "") + '<script src="/app/app.js"></script>');
