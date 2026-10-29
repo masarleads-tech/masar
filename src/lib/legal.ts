@@ -48,7 +48,7 @@ const en: Record<DocKey, LegalDoc> = {
         "Business contact data in leads is processed for B2B prospecting based on legitimate interest, limited to information the business or person published for business purposes.",
       ] },
       { h: "5. Who we share data with", p: [
-        "Supabase (account login and database), Vercel (website hosting), Anthropic (AI research on public web pages; your search text is sent to it to run the research), Google (Maps search, when enabled), PostHog (website analytics) and our payment provider.",
+        "Supabase (account login and database), Vercel (website hosting), Anthropic (AI research on public web pages; your search text is sent to it to run the research), Google (Maps search, when enabled), PostHog (website analytics), Sentry (error reports, without IP addresses) and our payment provider.",
         "These providers process data on our behalf under written terms. We do not sell your personal data.",
         "We may disclose data where required by law or by a competent authority in the UAE, Saudi Arabia or another GCC country.",
       ] },
@@ -184,7 +184,7 @@ const ar: Record<DocKey, LegalDoc> = {
         "تُعالج بيانات التواصل التجارية في النتائج لأغراض التسويق بين الشركات على أساس المصلحة المشروعة، وتقتصر على ما نشره النشاط أو الشخص لأغراض تجارية.",
       ] },
       { h: "5. مع من نشارك البيانات", p: [
-        "Supabase (تسجيل الدخول وقاعدة البيانات)، وVercel (استضافة الموقع)، وAnthropic (البحث بالذكاء الاصطناعي في الصفحات العامة؛ يُرسل إليها نص البحث لتنفيذه)، وGoogle (البحث في الخرائط عند تفعيله)، وPostHog (تحليلات الموقع)، ومزوّد الدفع.",
+        "Supabase (تسجيل الدخول وقاعدة البيانات)، وVercel (استضافة الموقع)، وAnthropic (البحث بالذكاء الاصطناعي في الصفحات العامة؛ يُرسل إليها نص البحث لتنفيذه)، وGoogle (البحث في الخرائط عند تفعيله)، وPostHog (تحليلات الموقع)، وSentry (تقارير الأخطاء، دون عناوين IP)، ومزوّد الدفع.",
         "يعالج هؤلاء المزوّدون البيانات نيابة عنا بموجب شروط مكتوبة. لا نبيع بياناتك الشخصية.",
         "قد نفصح عن البيانات إذا طلب ذلك القانون أو جهة مختصة في الإمارات أو السعودية أو أي دولة خليجية أخرى.",
       ] },
