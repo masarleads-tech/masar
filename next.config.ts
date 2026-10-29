@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 // PostHog Cloud region ("us" or "eu"), for the /ingest forwarding below.
-const posthogRegion = process.env.NEXT_PUBLIC_POSTHOG_REGION?.trim().toLowerCase() === "eu" ? "eu" : "us";
+const posthogRegion = (process.env.POSTHOG_REGION || process.env.NEXT_PUBLIC_POSTHOG_REGION)?.trim().toLowerCase() === "eu" ? "eu" : "us";
 
 const nextConfig: NextConfig = {
   // The tour, dashboard and download pages are plain HTML read from src/html at request time.

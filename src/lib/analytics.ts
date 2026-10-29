@@ -1,11 +1,12 @@
 /**
- * PostHog analytics (page views, clicks, sign-ups). Off until NEXT_PUBLIC_POSTHOG_KEY is set.
+ * PostHog analytics (page views, clicks, sign-ups). Off until POSTHOG_KEY (or NEXT_PUBLIC_POSTHOG_KEY) is set.
+ * Read on the server only, so either name works.
  * The browser sends events to /ingest on our own domain and Next forwards them to PostHog
  * (see next.config.ts), so ad blockers don't drop them.
  */
-export const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim() ?? "";
+export const POSTHOG_KEY = (process.env.POSTHOG_KEY || process.env.NEXT_PUBLIC_POSTHOG_KEY)?.trim() ?? "";
 /** "us" or "eu": the PostHog Cloud region picked at sign-up. */
-export const POSTHOG_REGION = process.env.NEXT_PUBLIC_POSTHOG_REGION?.trim().toLowerCase() === "eu" ? "eu" : "us";
+export const POSTHOG_REGION = (process.env.POSTHOG_REGION || process.env.NEXT_PUBLIC_POSTHOG_REGION)?.trim().toLowerCase() === "eu" ? "eu" : "us";
 export const analyticsEnabled = POSTHOG_KEY.startsWith("phc_");
 
 export type Visitor = { id: string; email?: string | null; username?: string | null };
