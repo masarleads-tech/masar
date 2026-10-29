@@ -63,6 +63,8 @@ export interface Lead {
   closingReasons: string[];
   /** From the Masar CLI's documenter agent: how well the lead matches the member's need (0-100), why, how much of it was verified (0-100), and the final rank. */
   compatibility?: number;
+  /** Where each detail came from (source, field, page), filled by the collectors. */
+  provenance?: { source: string; field: string; url: string | null; at: string }[];
   compatibilityReason?: string;
   verified?: number;
   rank?: number;

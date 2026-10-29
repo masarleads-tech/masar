@@ -1,30 +1,31 @@
-import { findIndustry } from "../../../src/lib/industries";
-import { emptyLead } from "../../../src/lib/lead";
-import type { Lead } from "../../../src/lib/types";
-import { VERSION } from "../version";
+import { findIndustry } from "../../lib/industries";
+import { emptyLead } from "../../lib/lead";
+import type { Lead } from "../../lib/types";
+import { sleep } from "../util";
+import { prov } from "./types";
 
 /**
  * OpenStreetMap: free, live, open data (ODbL), no key. Nominatim turns a city into an area,
  * Overpass returns the named businesses in it that match the industry's tags or keywords.
  * Both are public services with fair-use limits, so requests are spaced out and identified.
  */
-const UA = { "user-agent": `masar-cli/${VERSION} (+https://masar-umber-two.vercel.app/cli)` };
 const NOMINATIM = "https://nominatim.openstreetmap.org/search";
 const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
 const NAME_KEYS = ["shop", "amenity", "office", "craft", "leisure", "healthcare", "tourism"];
 
 let lastNominatim = 0;
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export interface OsmDeps { fetch: typeof fetch; userAgent: string; signal?: AbortSignal }
 
 interface Area { name: string; areaId: number | null; around: [number, number, number] | null; bbox: [number, number, number, number] }
 
-async function geocode(place: string): Promise<Area> {
+async function geocode(place: string, d: OsmDeps): Promise<Area> {
+  const UA = { "user-agent": d.userAgent };
   const get = async (extra: Record<string, string>) => {
     const wait = 1100 - (Date.now() - lastNominatim);
-    if (wait > 0) await sleep(wait);
+    if (wait > 0) await sleep(wait, d.signal);
     lastNominatim = Date.now();
     const q = new URLSearchParams({ q: place, format: "jsonv2", limit: "5", "accept-language": "en", ...extra });
-    const r = await fetch(`${NOMINATIM}?${q}`, { headers: UA, signal: AbortSignal.timeout(30_000) });
+    const r = await d.fetch(`${NOMINATIM}?${q}`, { headers: UA, signal: d.signal });
     return r.ok ? ((await r.json()) as Record<string, string>[]) : [];
   };
   let results = await get({ featureType: "city" });
@@ -67,18 +68,18 @@ function social(kind: string, value?: string) {
 
 export interface OsmResult { leads: Lead[]; area: string }
 
-export async function searchOsm(industryKey: string, custom: string, city: string, limit = 400): Promise<OsmResult> {
+export async function searchOsm(industryKey: string, custom: string, city: string, d: OsmDeps, limit = 400): Promise<OsmResult> {
   const ind = findIndustry(industryKey);
   const filters = [...(ind?.osm ?? []), ...(ind?.related ?? [])];
   const keywords = [...new Set([...(ind?.keywords ?? []), ...custom.split(/[,،]/).map((s) => s.trim()).filter((s) => s.length > 2)])];
   if (!filters.length && !keywords.length) return { leads: [], area: city };
-  const area = await geocode(city);
+  const area = await geocode(city, d);
   const query = buildQuery(area, filters, keywords, limit);
   let elements: { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] | null = null;
   let lastErr = "";
   for (const url of OVERPASS) {
     try {
-      const r = await fetch(url, { method: "POST", headers: { ...UA, "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ data: query }), signal: AbortSignal.timeout(150_000) });
+      const r = await d.fetch(url, { method: "POST", headers: { "user-agent": d.userAgent, "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ data: query }), signal: d.signal });
       if (!r.ok) { lastErr = `${r.status}`; continue; }
       elements = ((await r.json()) as { elements: typeof elements }).elements ?? [];
       break;
@@ -104,7 +105,9 @@ export async function searchOsm(industryKey: string, custom: string, city: strin
     l.instagram = social("instagram", t["contact:instagram"] || t.instagram);
     l.facebook = social("facebook", t["contact:facebook"] || t.facebook);
     l.linkedin = social("linkedin", t["contact:linkedin"] || t.linkedin);
-    l.sources = [`https://www.openstreetmap.org/${el.type}/${el.id}`];
+    const url = `https://www.openstreetmap.org/${el.type}/${el.id}`;
+    l.sources = [url];
+    l.provenance = ["name", "address", ...(l.phone ? ["phone"] : []), ...(l.website ? ["website"] : []), ...(l.email ? ["email"] : [])].map((f) => prov("osm", f, url));
     leads.push(l);
   }
   return { leads, area: area.name };
