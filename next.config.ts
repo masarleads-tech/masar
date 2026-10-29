@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     "/dashboard": ["./src/html/**"],
     "/welcome": ["./src/html/**"],
     "/cli": ["./src/html/**"],
+    "/cli/connect": ["./src/html/**"],
     "/home": ["./src/html/**"],
   },
 };

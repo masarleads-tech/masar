@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connect the Masar CLI</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="app.css">
+<style>
+body { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; background: radial-gradient(60% 50% at 50% 0%, rgba(23, 107, 100, 0.22), transparent 70%), var(--bg); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: calc(14px + env(safe-area-inset-top, 0px)) 14px; padding-left: var(--gl); padding-right: var(--gr); }
+.wrap { flex: 1; width: min(560px, 100%); margin: 0 auto; padding-block: 24px 56px; padding-left: var(--gl); padding-right: var(--gr); display: grid; gap: 16px; align-content: start; }
+h1 { margin: 8px 0 8px; font-size: clamp(28px, 4.4vw, 40px); line-height: 1.2; }
+html[lang="en"] h1 { letter-spacing: -0.03em; line-height: 1.1; }
+.lead { margin: 0; color: var(--muted); font-size: 16px; }
+.box { padding: 22px; display: grid; gap: 16px; }
+.code { direction: ltr; text-align: center; font: 700 30px/1 var(--font-en); letter-spacing: 0.14em; min-height: 58px; text-transform: uppercase; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row .btn { min-height: 44px; flex: 1; }
+.btn.teal { background: var(--teal); border-color: var(--teal); color: #fff; }
+.btn.teal:hover { background: #12564f; border-color: #12564f; }
+.warn { display: flex; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.warn svg { flex: none; width: 18px; height: 18px; color: var(--warn); margin-top: 2px; }
+.done { display: flex; gap: 12px; align-items: flex-start; }
+.done .dot { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--mint); color: var(--ink); }
+.done .dot svg { width: 18px; height: 18px; }
+.done b { display: block; font-size: 17px; }
+.err { color: var(--bad); font-size: 14px; margin: 0; }
+h2 { font-size: 15px; margin: 18px 0 2px; }
+.dev { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
+.dev:first-child { border-top: 0; }
+.dev .ic { flex: none; width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.05); }
+.dev .ic svg { width: 17px; height: 17px; }
+.dev .tx { flex: 1; min-width: 0; }
+.dev .tx b { display: block; font: 600 14px/1.35 var(--font-en); direction: ltr; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dev .tx small { color: var(--muted); font-size: 12.5px; }
+.empty { padding: 16px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/dashboard" aria-label="Masar" id="brand"></a>
+  <button class="btn sm" type="button" data-lang-toggle data-t="langBtn"></button>
+</header>
+
+<main class="wrap">
+  <section>
+    <span class="eyebrow">Masar CLI</span>
+    <h1 data-t="title"></h1>
+    <p class="lead" data-t="lead"></p>
+  </section>
+
+  <section class="card box" id="ask">
+    <div class="field">
+      <label for="code" data-t="codeLbl"></label>
+      <input class="input code" id="code" maxlength="9" autocomplete="off" spellcheck="false" placeholder="ABCD-EFGH">
+    </div>
+    <p class="warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg><span data-t="warn"></span></p>
+    <p class="err" id="err" role="alert" hidden></p>
+    <div class="row">
+      <button class="btn teal" type="button" id="ok" data-t="approve"></button>
+      <button class="btn" type="button" id="no" data-t="deny"></button>
+    </div>
+  </section>
+
+  <section class="card box" id="result" hidden>
+    <div class="done"><span class="dot" id="resIcon"></span><span><b id="resTitle"></b><span class="muted" id="resText"></span></span></div>
+  </section>
+
+  <section>
+    <h2 data-t="devTitle"></h2>
+    <p class="muted" style="margin:0 0 10px;font-size:14px" data-t="devSub"></p>
+    <div class="card" id="devices"></div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  "use strict";
+  const { $, icon } = Masar;
+  const DATA = window.MASAR_DATA || {};
+  const D = {
+    ar: {
+      langBtn: "English", title: "ربط مسار CLI بحسابك", lead: "تأكد إن الرمز هنا نفس الرمز اللي يظهر في الطرفية عندك، ثم اضغط «اسمح».",
+      codeLbl: "الرمز من الطرفية", warn: "اسمح فقط إذا كتبت masar login بنفسك الحين على جهازك. هذا يعطي الجهاز وصول لحسابك ورصيدك.",
+      approve: "اسمح", deny: "لا، ما أعرف هذا", okTitle: "تم ربط الجهاز", okText: "ارجع للطرفية، مسار جاهز. تقدر تقفل هذي الصفحة.",
+      noTitle: "تم الرفض", noText: "ما راح يقدر الجهاز يدخل حسابك.", badCode: "الرمز 8 حروف، مثل ABCD-EFGH.",
+      devTitle: "الأجهزة المربوطة", devSub: "كل جهاز يستخدم الذكاء الاصطناعي حقه، وعملاؤه ينحفظون في لوحة التحكم.",
+      none: "ما فيه أجهزة مربوطة بعد.", signOut: "تسجيل خروج", signedOut: "تم تسجيل خروج الجهاز",
+      lastUsed: "آخر استخدام", never: "ما استُخدم بعد", ai: "الذكاء الاصطناعي", unknownDev: "جهاز"
+    },
+    en: {
+      langBtn: "العربية", title: "Connect the Masar CLI to your account", lead: "Check that the code here matches the one in your terminal, then press Allow.",
+      codeLbl: "Code from your terminal", warn: "Only allow this if you just ran masar login yourself, on your own computer. It gives that computer access to your account and credits.",
+      approve: "Allow", deny: "No, I don't recognise this", okTitle: "Computer connected", okText: "Go back to your terminal, Masar is ready. You can close this page.",
+      noTitle: "Denied", noText: "That computer can't use your account.", badCode: "The code has 8 letters, like ABCD-EFGH.",
+      devTitle: "Connected computers", devSub: "Each computer uses its own AI. Leads it finds are saved to your dashboard.",
+      none: "No computers connected yet.", signOut: "Sign out", signedOut: "Computer signed out",
+      lastUsed: "Last used", never: "Not used yet", ai: "AI", unknownDev: "Computer"
+    }
+  };
+  const t = (k) => D[Masar.lang][k];
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const AI = { "claude-code": "Claude (subscription)", anthropic: "Claude API", codex: "Codex (ChatGPT plan)", openai: "OpenAI API", ollama: "Ollama (local)", "openai-compatible": "Local model" };
+  $("#brand").innerHTML = Masar.mark(32) + '<span class="word"><b>masar</b><small>مسار</small></span>';
+  $("#code").value = DATA.code || "";
+  $("#code").addEventListener("input", (e) => {
+    const v = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 8);
+    e.target.value = v.length > 4 ? v.slice(0, 4) + "-" + v.slice(4) : v;
+  });
+
+  async function answer(approve) {
+    const code = $("#code").value.replace(/[^A-Z]/gi, "");
+    const err = $("#err");
+    err.hidden = true;
+    if (code.length !== 8) { err.textContent = t("badCode"); err.hidden = false; return; }
+    $("#ok").disabled = $("#no").disabled = true;
+    try {
+      const res = await fetch("/api/cli/auth/approve", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code, approve }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || res.statusText);
+      $("#ask").hidden = true;
+      $("#result").hidden = false;
+      $("#resIcon").innerHTML = icon(approve ? "check" : "out");
+      $("#resTitle").dataset.t = approve ? "okTitle" : "noTitle";
+      $("#resText").dataset.t = approve ? "okText" : "noText";
+      Masar.apply();
+      if (approve) setTimeout(loadDevices, 4000);
+    } catch (e) {
+      err.textContent = e.message; err.hidden = false;
+    } finally {
+      $("#ok").disabled = $("#no").disabled = false;
+    }
+  }
+  $("#ok").addEventListener("click", () => answer(true));
+  $("#no").addEventListener("click", () => answer(false));
+
+  let devices = [];
+  function when(iso) {
+    if (!iso) return t("never");
+    return new Intl.DateTimeFormat(Masar.lang === "ar" ? "ar" : "en", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+  }
+  function renderDevices() {
+    const el = $("#devices");
+    if (!devices.length) { el.innerHTML = '<div class="empty">' + esc(t("none")) + "</div>"; return; }
+    el.innerHTML = devices.map((d) => '<div class="dev"><span class="ic">' + icon("bolt") + '</span><span class="tx"><b>' + esc(d.device_name || t("unknownDev")) +
+      "</b><small>" + esc(t("ai")) + ": " + esc(AI[d.ai_provider] || d.ai_provider || "—") + (d.ai_model ? " · " + esc(d.ai_model) : "") + " · " + esc(t("lastUsed")) + ": " + esc(when(d.last_used_at)) +
+      '</small></span><button class="btn sm danger" type="button" data-id="' + esc(d.id) + '">' + esc(t("signOut")) + "</button></div>").join("");
+  }
+  async function loadDevices() {
+    try {
+      const res = await fetch("/api/cli/devices");
+      devices = res.ok ? (await res.json()).devices || [] : [];
+    } catch (e) { devices = []; }
+    renderDevices();
+  }
+  $("#devices").addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-id]");
+    if (!b) return;
+    b.disabled = true;
+    const res = await fetch("/api/cli/devices?id=" + encodeURIComponent(b.dataset.id), { method: "DELETE" });
+    if (res.ok) { devices = devices.filter((d) => d.id !== b.dataset.id); renderDevices(); Masar.toast(t("signedOut")); }
+    else b.disabled = false;
+  });
+  Masar.onLang(() => { document.title = Masar.lang === "ar" ? "ربط مسار CLI" : "Connect the Masar CLI"; renderDevices(); });
+  Masar.init(D);
+  loadDevices();
+})();
+</script>
+</body>
+</html>

@@ -61,6 +61,11 @@ export interface Lead {
   fitReasons: string[];
   closing: number;
   closingReasons: string[];
+  /** From the Masar CLI's documenter agent: how well the lead matches the member's need (0-100), why, how much of it was verified (0-100), and the final rank. */
+  compatibility?: number;
+  compatibilityReason?: string;
+  verified?: number;
+  rank?: number;
   /** Set when the lead is saved in the database. */
   rowId?: string;
   outcome?: Outcome;
