@@ -1,6 +1,7 @@
 import { bossDiscover } from "@/core/boss";
 import { createSearch, saveCollected } from "@/core/intelligence";
 import { cleanBrief, errorResponse, noCreditsError, requireUser, searchDeps, HttpError } from "@/lib/server";
+import { cachedFetch, clientIp, rateLimit } from "@/lib/redis";
 import type { DiscoverResponse } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -12,6 +13,7 @@ export const maxDuration = 300;
 export async function POST(req: Request) {
   try {
     const account = await requireUser();
+    await rateLimit("discover", account.userId ?? clientIp(req));
     const brief = cleanBrief(await req.json());
     if (!brief.locations.length) throw new HttpError(400, "Add at least one city.");
     const { llm, env, options, ownKey } = await searchDeps(req, account);
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
       if (account.credits <= 0) throw noCreditsError();
       brief.count = Math.min(brief.count, account.credits);
     }
-    const result = await bossDiscover({ brief, options }, { llm, env, signal: req.signal });
+    const result = await bossDiscover({ brief, options }, { llm, env, fetch: cachedFetch(), signal: req.signal });
     const warnings = [...result.warnings];
     let searchId: string | null = null;
     if (account.supabase && account.userId) {
