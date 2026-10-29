@@ -16,5 +16,9 @@ export function GET() {
     ANTHROPIC_API_KEY: has("ANTHROPIC_API_KEY") ? "ok" : "missing",
     POSTHOG_KEY: shape(has("POSTHOG_KEY") ? "POSTHOG_KEY" : "NEXT_PUBLIC_POSTHOG_KEY", "phc_"),
     POSTHOG_REGION: (process.env.POSTHOG_REGION || process.env.NEXT_PUBLIC_POSTHOG_REGION)?.trim() || "missing (uses us)",
+    SENTRY_DSN: shape("SENTRY_DSN", "https://"),
+    SENTRY_AUTH_TOKEN: shape("SENTRY_AUTH_TOKEN", "sntrys_"),
+    SENTRY_ORG: has("SENTRY_ORG") ? "ok" : "missing",
+    SENTRY_PROJECT: has("SENTRY_PROJECT") ? "ok" : "missing",
   });
 }
