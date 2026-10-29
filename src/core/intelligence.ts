@@ -17,7 +17,8 @@ const SOCIAL = /(^|\.)(instagram|facebook|linkedin|tiktok|twitter|x|linktr|wa)\.
 export function dedupeKeys(l: Lead): string[] {
   const keys: string[] = [];
   const digits = (l.phone ?? l.whatsapp ?? "").replace(/\D/g, "");
-  if (digits.length >= 8) keys.push(`p:${digits.slice(-9)}`);
+  // The last 8 digits match "+962 6 464 4131" with "06 464 4131": country code and trunk 0 differ, the number doesn't.
+  if (digits.length >= 8) keys.push(`p:${digits.slice(-8)}`);
   const d = domain(l.website);
   if (d && !SOCIAL.test(d)) keys.push(`w:${d}`);
   const n = normName(l.name);

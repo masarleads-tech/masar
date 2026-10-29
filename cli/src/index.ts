@@ -1,34 +1,21 @@
 import { spawn } from "node:child_process";
 import { INDUSTRIES } from "../../src/lib/industries";
-import { AGENT_LABEL, bool, obj, SOURCES, type AgentId } from "../../src/core";
+import { AGENT_LABEL, bool, obj, type AgentId } from "../../src/core";
 import { connectAI, createAI, detect, PROVIDERS } from "./ai/providers";
-import { cleanSources, interview, normalizeBrief, type Plan } from "./agents/main";
+import { interview } from "./agents/main";
 import { present } from "./present";
 import { api, ApiError, type Me } from "./api";
 import { configPath, loadConfig, saveConfig, type Config, type ProviderId } from "./config";
 import { writeCsv, writeJson } from "./export";
 import { cliEnv, runPipeline } from "./pipeline";
 import { collectorStatus } from "./collectors";
+import { parseArgs, planFromFlags } from "./args";
 import * as ui from "./ui";
 import { VERSION } from "./version";
 
 // ---------- Arguments ----------
 
-const argv = process.argv.slice(2);
-const flags: Record<string, string | true> = {};
-const words: string[] = [];
-for (let i = 0; i < argv.length; i++) {
-  const a = argv[i];
-  if (a.startsWith("--")) {
-    const [k, v] = a.slice(2).split("=", 2);
-    if (v !== undefined) flags[k] = v;
-    else if (argv[i + 1] && !argv[i + 1].startsWith("-")) flags[k] = argv[++i];
-    else flags[k] = true;
-  } else if (a === "-h") flags.help = true;
-  else if (a === "-v") flags.version = true;
-  else if (a === "-y") flags.yes = true;
-  else words.push(a);
-}
+const { flags, words } = parseArgs(process.argv.slice(2));
 const flag = (k: string) => (typeof flags[k] === "string" ? (flags[k] as string) : undefined);
 
 const PLAN_NAME: Record<Me["plan"], string> = { free: "Free", weekly: "Weekly", basic: "Basic", premium: "Premium" };
@@ -137,20 +124,6 @@ async function testAi(cfg: Config) {
   }
 }
 
-function planFromFlags(cap: number): Plan | null {
-  const city = flag("city") ?? flag("cities");
-  if (!city) return null;
-  const ind = flag("industry") ?? "custom";
-  const known = INDUSTRIES.some((i) => i.key === ind);
-  // --agents keeps its old names working: google → google_web, website → read websites.
-  const asked = flag("agents")?.split(",").map((s) => s.trim().toLowerCase().replace(/^google$/, "google_web")) ?? [...SOURCES, "website"];
-  return {
-    brief: normalizeBrief({ industry: known ? ind : "custom", industryCustom: known ? "" : (flag("what") ?? ind), locations: city.split(/[,،]/), offer: flag("offer") ?? "", count: Number(flag("count")) || 20 }, cap),
-    sources: cleanSources(asked), websites: !flags["no-websites"] && (asked.includes("website") || !flag("agents")),
-    reason: "Chosen with command-line options.", summary: "",
-  };
-}
-
 async function find(cfg: Config) {
   ui.banner("Find the decision makers your next conversation depends on.");
   if (!cfg.token) {
@@ -173,7 +146,7 @@ async function find(cfg: Config) {
     return;
   }
 
-  let plan = planFromFlags(cap) ?? (await interview(ai, me, cap, words.slice(1).join(" ") || undefined));
+  let plan = planFromFlags(flags, cap) ?? (await interview(ai, me, cap, words.slice(1).join(" ") || undefined));
   for (;;) {
     ui.print();
     const b = plan.brief;
