@@ -1,6 +1,8 @@
 import { z, ZodError } from "zod";
 import { errorResponse, HttpError, requireUser } from "@/lib/server";
 import type { Lead } from "@/lib/types";
+import { forgetSearch, pineconeEnabled } from "@/lib/pinecone";
+import { after } from "next/server";
 
 const Cell = z.string().max(2000);
 const NewList = z.object({
@@ -66,11 +68,13 @@ export async function POST(req: Request) {
 /** Deletes one of the member's lists or saved searches (with its leads). */
 export async function DELETE(req: Request) {
   try {
-    const { supabase } = await me();
+    const { supabase, userId } = await me();
     const q = new URL(req.url).searchParams;
     const table = q.get("kind") === "search" ? "searches" : "client_lists";
-    const { error } = await supabase.from(table).delete().eq("id", q.get("id") ?? "");
+    const id = q.get("id") ?? "";
+    const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) throw new Error(error.message);
+    if (table === "searches" && pineconeEnabled) after(() => forgetSearch(userId, id));
     return Response.json({ ok: true });
   } catch (e) {
     return errorResponse(e);

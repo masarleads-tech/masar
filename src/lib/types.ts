@@ -68,6 +68,8 @@ export interface Lead {
   compatibilityReason?: string;
   verified?: number;
   rank?: number;
+  /** The closest lead from the member's earlier searches that they marked Won or Meeting (Pinecone lead memory). */
+  lookalike?: { name: string; outcome: "won" | "meeting"; score: number };
   /** Set when the lead is saved in the database. */
   rowId?: string;
   outcome?: Outcome;

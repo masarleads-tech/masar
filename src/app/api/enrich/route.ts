@@ -3,6 +3,8 @@ import { saveLeads } from "@/core/intelligence";
 import { parseIncomingLead } from "@/core/schemas";
 import { chargeCredits, cleanBrief, errorResponse, noCreditsError, requireUser, searchDeps, HttpError } from "@/lib/server";
 import { cachedFetch, clientIp, rateLimit } from "@/lib/redis";
+import { applyLookalikes, findLookalikes, pineconeEnabled, rememberLeads } from "@/lib/pinecone";
+import { after } from "next/server";
 import type { EnrichResponse, Lead } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -37,6 +39,10 @@ export async function POST(req: Request) {
       checked = checked.slice(0, taken);
       creditsLeft = account.credits - taken;
     }
+    // Leads that look like ones the member won before move up (Pinecone lead memory; skipped when it's off).
+    if (pineconeEnabled && account.supabase && account.userId && body.searchId && checked.length) {
+      checked = applyLookalikes(checked, await findLookalikes(account.supabase, account.userId, body.searchId, checked));
+    }
     // Keep every checked lead in the database so nothing is lost.
     if (account.supabase && account.userId && body.searchId && checked.length) {
       const saved = await saveLeads(account.supabase, account.userId, body.searchId, brief, checked);
@@ -44,6 +50,10 @@ export async function POST(req: Request) {
         const r = saved.get(l.id);
         return r ? { ...l, rowId: r.id, outcome: r.outcome as Lead["outcome"], note: r.note } : l;
       });
+      if (pineconeEnabled) {
+        const userId = account.userId, searchId = body.searchId, remembered = checked;
+        after(() => rememberLeads(userId, searchId, remembered)); // after the answer is sent
+      }
     }
     const res: EnrichResponse = { leads: checked, usage: result.usage, creditsLeft, warnings: result.warnings, agents: result.reports };
     return Response.json(res);
