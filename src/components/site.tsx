@@ -180,20 +180,23 @@ export function AppShell({ t, lang, config, active, onLang, onNav, onKeys, child
 
 function CreditsCard({ t, config }: { t: Strings; config: SiteConfig }) {
   const u = config.user!;
-  const total = u.plan === "weekly" ? 100 : 10;
+  const paid = u.plan === "basic" || u.plan === "premium";
+  const total = paid ? 300 : u.plan === "weekly" ? 100 : 10;
   const pct = Math.max(0, Math.min(100, (100 * u.credits) / total));
   const refill = u.weekStarted ? new Date(new Date(u.weekStarted).getTime() + 7 * 864e5) : null;
   return (
     <div className="mx-3 mb-3 rounded-[10px] border border-ink-800 bg-ink-900 p-4">
-      <div className="text-xs font-semibold text-white/60">{u.plan === "weekly" ? t.planWeeklyShort : t.planFree}</div>
+      <div className="text-xs font-semibold text-white/60">{u.plan === "premium" ? t.planPremiumShort : u.plan === "basic" ? t.planBasicShort : u.plan === "weekly" ? t.planWeeklyShort : t.planFree}</div>
       <div className="mt-1.5 flex items-baseline gap-1.5">
         <span className="text-[26px] font-semibold tabular-nums">{u.credits}</span>
         <span className="text-xs text-white/55">{t.leadsLeft}</span>
       </div>
       <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-mint-400" style={{ width: `${pct}%` }} /></div>
       {u.plan === "weekly" && refill && <div className="mt-2 text-xs text-white/55">{t.renews} {fmtDate(t, refill, { day: "numeric", month: "short" })}</div>}
+      {paid && u.planUntil && <div className="mt-2 text-xs text-white/55">{t.until} {fmtDate(t, new Date(u.planUntil), { day: "numeric", month: "short" })}</div>}
+      {u.plan === "premium" && <div className="mt-1 text-xs text-mint-400">{t.premiumCli}</div>}
       {u.plan === "free" && (
-        <a href={`mailto:${CONTACT_EMAIL}?subject=Masar%20weekly%20plan`} className="mt-3 flex min-h-10 items-center justify-center rounded-[6px] bg-teal-700 text-xs font-semibold text-white hover:bg-teal-800">{t.subscribe}</a>
+        <a href={`mailto:${CONTACT_EMAIL}?subject=Masar%20Basic%20or%20Premium`} className="mt-3 flex min-h-10 items-center justify-center rounded-[6px] bg-teal-700 text-xs font-semibold text-white hover:bg-teal-800">{t.subscribe}</a>
       )}
     </div>
   );

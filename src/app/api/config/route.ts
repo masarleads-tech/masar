@@ -18,7 +18,7 @@ export async function GET() {
         email: a?.email ?? null,
         confirmed: true,
         credits: Number(a?.credits ?? 0),
-        plan: a?.plan === "weekly" ? "weekly" : "free",
+        plan: ["weekly", "basic", "premium"].includes(a?.plan) ? a.plan : "free",
         planUntil: a?.plan_until ?? null,
         weekStarted: a?.week_started ?? null,
         isAdmin: !!a?.is_admin,
