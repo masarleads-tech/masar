@@ -7,7 +7,10 @@ import { useEffect } from "react";
 export default function Logout() {
   const { signOut, loaded } = useClerk();
   useEffect(() => {
-    if (loaded) signOut({ redirectUrl: "/" });
+    if (!loaded) return;
+    // A new anonymous visitor in PostHog, so the next person on this computer isn't counted as this member.
+    (window as { posthog?: { reset: () => void } }).posthog?.reset();
+    signOut({ redirectUrl: "/" });
   }, [loaded, signOut]);
   return <main className="grid min-h-screen place-items-center text-sm text-muted">…</main>;
 }

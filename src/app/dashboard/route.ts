@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   try {
     const data = await dashboardData(me.supabase, me.userId);
     if (!data.setup.setup_done) return Response.redirect(new URL("/welcome", req.url), 303);
-    return htmlPage("dashboard", data);
+    return htmlPage("dashboard", data, { id: me.userId, email: data.setup.email as string | null, username: data.username as string | null });
   } catch (e) {
     console.error("[masar] dashboard:", e instanceof Error ? e.message : e);
     // For example before the new tables are added in Supabase: fall back to the search app.

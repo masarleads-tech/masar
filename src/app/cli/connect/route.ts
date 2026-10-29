@@ -9,5 +9,5 @@ export async function GET(req: Request) {
   const back = code ? `/cli/connect?code=${code}` : "/cli/connect";
   const me = await member();
   if (!me) return toLogin(req, back);
-  return htmlPage("cli-connect", { code });
+  return htmlPage("cli-connect", { code }, { id: me.userId });
 }

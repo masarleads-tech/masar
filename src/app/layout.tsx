@@ -2,6 +2,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { arSA, enGB } from "@clerk/localizations";
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
+import { IdentifyMember } from "@/components/Analytics";
+import { analyticsEnabled, posthogScript } from "@/lib/analytics";
 import { accountsEnabled } from "@/lib/supabase/env";
 import "./globals.css";
 
@@ -43,6 +45,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- one shared font sheet for every page */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" />
+        {analyticsEnabled && <script dangerouslySetInnerHTML={{ __html: posthogScript() }} />}
       </head>
       <body className="antialiased">{children}</body>
     </html>
@@ -52,6 +55,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <ClerkProvider localization={ar ? arSA : enGB} appearance={clerkAppearance}
       signInUrl="/login" signUpUrl="/login?mode=signup" signInFallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard">
       {page}
+      {analyticsEnabled && <IdentifyMember />}
     </ClerkProvider>
   );
 }

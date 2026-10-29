@@ -12,7 +12,7 @@ export const COMPANY = {
   privacyEmail: process.env.NEXT_PUBLIC_PRIVACY_EMAIL || process.env.NEXT_PUBLIC_CONTACT_EMAIL || "[privacy email]",
   law: "[Governing law, e.g. the laws of the Emirate of Dubai and the federal laws of the UAE]",
   courts: "[Courts, e.g. the courts of Dubai]",
-  updated: "27 October 2026",
+  updated: "29 October 2026",
 };
 
 export type DocKey = "privacy" | "terms" | "refund";
@@ -33,6 +33,7 @@ const en: Record<DocKey, LegalDoc> = {
         "Account data: your email address, password (stored only as a secure hash by our login provider), sign-up and confirmation dates.",
         "Service data: the searches you run (what you sell, target customer, cities), the results we return to you, your plan, and the number of leads used.",
         "Technical data: login session cookies, IP address and basic logs needed to keep the service secure.",
+        "Usage data: the pages you visit and the buttons you use on the Masar website, to understand how the service is used and improve it.",
         "Payment data: if you subscribe, payment is handled by our payment provider or by bank transfer. We keep the invoice record, not your full card details.",
       ] },
       { h: "3. Data in the leads we find", p: [
@@ -47,7 +48,7 @@ const en: Record<DocKey, LegalDoc> = {
         "Business contact data in leads is processed for B2B prospecting based on legitimate interest, limited to information the business or person published for business purposes.",
       ] },
       { h: "5. Who we share data with", p: [
-        "Supabase (account login and database), Vercel (website hosting), Anthropic (AI research on public web pages; your search text is sent to it to run the research), Google (Maps search, when enabled) and our payment provider.",
+        "Supabase (account login and database), Vercel (website hosting), Anthropic (AI research on public web pages; your search text is sent to it to run the research), Google (Maps search, when enabled), PostHog (website analytics) and our payment provider.",
         "These providers process data on our behalf under written terms. We do not sell your personal data.",
         "We may disclose data where required by law or by a competent authority in the UAE, Saudi Arabia or another GCC country.",
       ] },
@@ -72,7 +73,7 @@ const en: Record<DocKey, LegalDoc> = {
         "If a data breach affects your personal data, we will notify you and the relevant authority as the law requires.",
       ] },
       { h: "11. Cookies", p: [
-        "We use only the cookies needed to keep you logged in and remember your language. We do not use advertising cookies.",
+        "We use the cookies needed to keep you logged in and remember your language, and an analytics cookie from PostHog that counts visits and shows us which parts of the site are used. We do not use advertising cookies.",
       ] },
       { h: "12. Children", p: ["Masar is a business service and is not for people under 18."] },
       { h: "13. Changes", p: [`We will post any change on this page and, for important changes, email you. Last updated: ${c.updated}.`] },
@@ -168,6 +169,7 @@ const ar: Record<DocKey, LegalDoc> = {
         "بيانات الحساب: بريدك الإلكتروني، وكلمة المرور (تُحفظ فقط بشكل مشفّر لدى مزوّد تسجيل الدخول)، وتواريخ التسجيل والتأكيد.",
         "بيانات الخدمة: عمليات البحث التي تجريها (ما تبيعه، العميل المستهدف، المدن)، والنتائج التي نعيدها لك، وباقتك، وعدد العملاء المستخدمين.",
         "البيانات التقنية: ملفات تعريف الارتباط الخاصة بجلسة الدخول، وعنوان IP، والسجلات الأساسية اللازمة لحماية الخدمة.",
+        "بيانات الاستخدام: الصفحات التي تزورها والأزرار التي تستخدمها في موقع مسار، لفهم طريقة استخدام الخدمة وتحسينها.",
         "بيانات الدفع: عند الاشتراك يتم الدفع عبر مزوّد الدفع أو التحويل البنكي. نحتفظ بسجل الفاتورة فقط، وليس ببيانات بطاقتك كاملة.",
       ] },
       { h: "3. البيانات الواردة في نتائج العملاء المحتملين", p: [
@@ -182,7 +184,7 @@ const ar: Record<DocKey, LegalDoc> = {
         "تُعالج بيانات التواصل التجارية في النتائج لأغراض التسويق بين الشركات على أساس المصلحة المشروعة، وتقتصر على ما نشره النشاط أو الشخص لأغراض تجارية.",
       ] },
       { h: "5. مع من نشارك البيانات", p: [
-        "Supabase (تسجيل الدخول وقاعدة البيانات)، وVercel (استضافة الموقع)، وAnthropic (البحث بالذكاء الاصطناعي في الصفحات العامة؛ يُرسل إليها نص البحث لتنفيذه)، وGoogle (البحث في الخرائط عند تفعيله)، ومزوّد الدفع.",
+        "Supabase (تسجيل الدخول وقاعدة البيانات)، وVercel (استضافة الموقع)، وAnthropic (البحث بالذكاء الاصطناعي في الصفحات العامة؛ يُرسل إليها نص البحث لتنفيذه)، وGoogle (البحث في الخرائط عند تفعيله)، وPostHog (تحليلات الموقع)، ومزوّد الدفع.",
         "يعالج هؤلاء المزوّدون البيانات نيابة عنا بموجب شروط مكتوبة. لا نبيع بياناتك الشخصية.",
         "قد نفصح عن البيانات إذا طلب ذلك القانون أو جهة مختصة في الإمارات أو السعودية أو أي دولة خليجية أخرى.",
       ] },
@@ -206,7 +208,7 @@ const ar: Record<DocKey, LegalDoc> = {
         "نستخدم اتصالات مشفّرة (HTTPS)، وكلمات مرور مشفّرة، وضوابط وصول في قاعدة البيانات بحيث لا يرى المستخدم إلا حسابه، ونحتفظ بمفاتيح API على الخادم فقط.",
         "في حال حدوث اختراق يؤثر على بياناتك الشخصية، سنبلغك ونبلغ الجهة المختصة وفق ما يتطلبه القانون.",
       ] },
-      { h: "11. ملفات تعريف الارتباط", p: ["نستخدم فقط الملفات اللازمة لإبقائك مسجلًا للدخول وتذكّر لغتك. لا نستخدم ملفات إعلانية."] },
+      { h: "11. ملفات تعريف الارتباط", p: ["نستخدم الملفات اللازمة لإبقائك مسجلًا للدخول وتذكّر لغتك، وملف تحليلات من PostHog يحسب الزيارات ويوضح لنا الأجزاء المستخدمة من الموقع. لا نستخدم ملفات إعلانية."] },
       { h: "12. القاصرون", p: ["مسار خدمة للأعمال وغير مخصصة لمن هم دون 18 عامًا."] },
       { h: "13. التعديلات", p: [`ننشر أي تعديل في هذه الصفحة، ونرسل لك بريدًا عند التعديلات المهمة. آخر تحديث: ${c.updated}.`] },
     ],
