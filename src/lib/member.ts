@@ -165,7 +165,7 @@ export async function dashboardData(supabase: SupabaseClient, userId: string) {
   return {
     username: setup.username ?? null,
     setup,
-    account: { credits: Number(a.credits ?? 0), plan: a.plan === "weekly" ? "weekly" : "free" },
+    account: { credits: Number(a.credits ?? 0), plan: ["weekly", "basic", "premium"].includes(a.plan) ? a.plan : "free", until: a.plan_until ?? null },
     stats,
     lists,
     cli,

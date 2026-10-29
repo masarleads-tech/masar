@@ -103,7 +103,7 @@ export interface UserInfo {
   email: string | null;
   confirmed: boolean;
   credits: number;
-  plan: "free" | "weekly";
+  plan: "free" | "weekly" | "basic" | "premium";
   planUntil: string | null;
   weekStarted: string | null;
   isAdmin: boolean;

@@ -92,7 +92,8 @@ const en: Record<DocKey, LegalDoc> = {
       ] },
       { h: "3. Plans and leads", p: [
         "Free trial: 10 leads, given once after your email is confirmed.",
-        "Weekly plan: 100 leads per 7-day week while your subscription is active. Unused leads do not carry over to the next week.",
+        "Basic plan: 300 leads per 30-day month while your subscription is active. One lead uses one credit. Unused leads do not carry over to the next month.",
+        "Premium plan: everything in Basic, plus unlimited leads through the Masar CLI.",
         "One lead is used each time Masar finishes checking a business for you. Prices and plan details are shown before you pay and may change for future periods with notice.",
       ] },
       { h: "4. Acceptable use", p: [
@@ -131,7 +132,7 @@ const en: Record<DocKey, LegalDoc> = {
     sections: [
       { h: "1. Free trial first", p: ["Every account gets 10 free leads after email confirmation, so you can judge the quality before you subscribe."] },
       { h: "2. Cancelling a subscription", p: [
-        "You can cancel your weekly plan at any time by emailing " + c.email + ". Cancellation stops the next renewal. You keep access until the end of the period you paid for.",
+        "You can cancel your plan at any time by emailing " + c.email + ". Cancellation stops the next renewal. You keep access until the end of the period you paid for.",
       ] },
       { h: "3. When we refund", p: [
         "Within 7 days of your first payment, if you have used fewer than 10 leads of the paid plan, we refund the full payment.",
@@ -224,7 +225,8 @@ const ar: Record<DocKey, LegalDoc> = {
       ] },
       { h: "3. الباقات والرصيد", p: [
         "التجربة المجانية: 10 عملاء، تُمنح مرة واحدة بعد تأكيد بريدك.",
-        "الباقة الأسبوعية: 100 عميل لكل أسبوع (7 أيام) طوال مدة الاشتراك. الرصيد غير المستخدم لا يُرحّل للأسبوع التالي.",
+        "الباقة الأساسية: 300 عميل لكل شهر (30 يومًا) طوال مدة الاشتراك، ويستهلك كل عميل رصيدًا واحدًا. الرصيد غير المستخدم لا يُرحّل للشهر التالي.",
+        "باقة بريميوم: كل ما في الأساسية، مع عملاء بلا حدود عبر مسار CLI.",
         "يُستهلك عميل واحد في كل مرة ينتهي فيها مسار من التحقق من نشاط لك. تُعرض الأسعار وتفاصيل الباقة قبل الدفع، وقد تتغير للفترات القادمة مع إشعار مسبق.",
       ] },
       { h: "4. الاستخدام المقبول", p: [
@@ -250,7 +252,7 @@ const ar: Record<DocKey, LegalDoc> = {
     intro: "نريدك أن تكون واثقًا قبل الدفع. توضح هذه السياسة متى يمكنك الإلغاء واسترداد المبلغ، وتُطبق مع حقوقك بموجب قانون حماية المستهلك في الإمارات ونظام التجارة الإلكترونية في السعودية وأنظمة حماية المستهلك في دول الخليج الأخرى.",
     sections: [
       { h: "1. التجربة المجانية أولًا", p: ["يحصل كل حساب على 10 عملاء مجانًا بعد تأكيد البريد، لتقييم الجودة قبل الاشتراك."] },
-      { h: "2. إلغاء الاشتراك", p: ["يمكنك إلغاء الباقة الأسبوعية في أي وقت بمراسلة " + c.email + ". يوقف الإلغاء التجديد التالي، ويبقى وصولك قائمًا حتى نهاية الفترة المدفوعة."] },
+      { h: "2. إلغاء الاشتراك", p: ["يمكنك إلغاء باقتك في أي وقت بمراسلة " + c.email + ". يوقف الإلغاء التجديد التالي، ويبقى وصولك قائمًا حتى نهاية الفترة المدفوعة."] },
       { h: "3. متى نرد المبلغ", p: [
         "خلال 7 أيام من أول دفعة، إذا استخدمت أقل من 10 عملاء من الباقة المدفوعة، نرد المبلغ كاملًا.",
         "إذا منعك عطل تقني من جهتنا من الحصول على عملاء دفعت ثمنهم، نضيف العملاء الناقصين أو نرد قيمتهم، حسب اختيارك.",
@@ -259,7 +261,7 @@ const ar: Record<DocKey, LegalDoc> = {
       ] },
       { h: "4. متى لا نرد المبلغ", p: [
         "العملاء الذين تم تسليمهم خدمة رقمية تم تنفيذها، لذا لا تُسترد قيمتهم إلا وفق ما سبق أو حيث يتطلب القانون ذلك.",
-        "الرصيد غير المستخدم في نهاية الأسبوع، والحسابات المغلقة بسبب مخالفة شروط الاستخدام.",
+        "الرصيد غير المستخدم في نهاية الشهر، والحسابات المغلقة بسبب مخالفة شروط الاستخدام.",
       ] },
       { h: "5. جودة العملاء", p: ["إذا كان أحد العملاء خاطئًا بوضوح (مثل نشاط غير موجود أو رقم يعود لنشاط آخر)، أبلغنا خلال 14 يومًا باسم العميل، وسنعوضك برصيد عميل جديد."] },
       { h: "6. طريقة الاسترداد", p: ["يُعاد المبلغ إلى وسيلة الدفع الأصلية (البطاقة أو الحساب البنكي) خلال 14 يومًا من الموافقة، وقد يستغرق ظهوره لدى بنكك بضعة أيام إضافية."] },

@@ -47,7 +47,7 @@ export default function Admin() {
 
   return (
     <AppShell t={t} lang={lang} config={config} active="admin" onLang={toggleLang}>
-      <PageHead title="Customers" sub={`${rows.length} accounts · ${rows.filter((r) => r.plan === "weekly").length} on the weekly plan`}
+      <PageHead title="Customers" sub={`${rows.length} accounts · ${rows.filter((r) => r.plan === "basic").length} Basic · ${rows.filter((r) => r.plan === "premium").length} Premium`}
         actions={<input className="input w-full sm:w-64" placeholder="Search email" value={filter} onChange={(e) => setFilter(e.target.value)} />} />
       <div className="p-5 sm:p-8" dir="ltr">
       {error && <p className="mt-3 rounded-[6px] bg-red-50 p-2 text-sm text-red-700">{error}</p>}
@@ -60,7 +60,7 @@ export default function Admin() {
               <th className="p-3 text-left">Joined</th>
               <th className="p-3 text-left">Plan</th>
               <th className="p-3 text-left">Leads left</th>
-              <th className="p-3 text-left">Weekly plan</th>
+              <th className="p-3 text-left">Subscription</th>
               <th className="p-3 text-left">Add leads</th>
               <th className="p-3 text-left">Own Claude key</th>
             </tr>
@@ -71,7 +71,7 @@ export default function Admin() {
         </table>
       </div>
       <p className="mt-4 text-xs opacity-60">
-        Weekly plan: the balance is set to 100 at the start of each week and unused leads do not carry over.
+        Basic and Premium: the balance is set to 300 every 30 days and unused leads do not carry over. Premium leads in the Masar CLI are free.
         A customer&apos;s own key is used for all their searches; make it in its own workspace in the Anthropic Console with a spend limit.
       </p>
       </div>
@@ -83,7 +83,8 @@ function AdminRow({ r, day, call }: {
   r: Row; day: (d: string | null) => string;
   call: (fn: string, args: Record<string, unknown>, done: string) => Promise<void>;
 }) {
-  const [weeks, setWeeks] = useState(4);
+  const [months, setMonths] = useState(1);
+  const paid = r.plan === "basic" || r.plan === "premium";
   const [amount, setAmount] = useState(10);
   const [key, setKey] = useState("");
   return (
@@ -94,19 +95,21 @@ function AdminRow({ r, day, call }: {
       </td>
       <td className="p-3 text-xs">{day(r.created_at)}</td>
       <td className="p-3 text-xs">
-        {r.plan === "weekly" ? <span className="rounded-[6px] bg-teal-100 px-2 py-0.5 font-semibold text-teal-800">weekly</span> : "free"}
+        {r.plan !== "free" ? <span className="rounded-[6px] bg-teal-100 px-2 py-0.5 font-semibold text-teal-800">{r.plan}</span> : "free"}
         {r.plan_until && <div className="mt-1 opacity-70">until {day(r.plan_until)}</div>}
       </td>
       <td className="p-3 font-semibold tabular-nums">{r.credits}</td>
       <td className="p-3">
         <div className="flex items-center gap-1">
-          <input type="number" min={1} max={52} value={weeks} onChange={(e) => setWeeks(Number(e.target.value))} className="input min-h-9 w-16 px-2 py-1" />
-          <span className="text-xs">wk</span>
-          <button className="btn-primary min-h-9 px-2.5 py-1 text-xs" onClick={() => call("admin_set_weekly", { target_email: r.email, weeks }, `${r.email}: weekly plan +${weeks} weeks`)}>
-            {r.plan === "weekly" ? "Extend" : "Start"}
-          </button>
-          {r.plan === "weekly" && (
-            <button className="btn-secondary min-h-9 px-2.5 py-1 text-xs" onClick={() => confirm(`End the weekly plan for ${r.email}?`) && call("admin_set_weekly", { target_email: r.email, weeks: 0 }, `${r.email}: plan ended`)}>End</button>
+          <input type="number" min={1} max={24} value={months} onChange={(e) => setMonths(Number(e.target.value))} className="input min-h-9 w-16 px-2 py-1" />
+          <span className="text-xs">mo</span>
+          {(["basic", "premium"] as const).map((p) => (
+            <button key={p} className={`${r.plan === p ? "btn-primary" : "btn-secondary"} min-h-9 px-2.5 py-1 text-xs capitalize`} onClick={() => call("admin_set_plan", { target_email: r.email, new_plan: p, months }, `${r.email}: ${p} +${months} months`)}>
+              {r.plan === p ? "Extend" : p}
+            </button>
+          ))}
+          {(paid || r.plan === "weekly") && (
+            <button className="btn-secondary min-h-9 px-2.5 py-1 text-xs" onClick={() => confirm(`End the ${r.plan} plan for ${r.email}?`) && call(paid ? "admin_set_plan" : "admin_set_weekly", paid ? { target_email: r.email, new_plan: r.plan, months: 0 } : { target_email: r.email, weeks: 0 }, `${r.email}: plan ended`)}>End</button>
           )}
         </div>
       </td>

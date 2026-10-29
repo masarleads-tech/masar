@@ -187,7 +187,7 @@
       srcMasar: "مسار", srcCsv: "ملف CSV", srcManual: "يدوي", srcHub: "HubSpot", today: "اليوم", newName: "قائمة جديدة", imported: (n, r) => "تم استيراد " + n + " (" + r + " سجل)", deleted: "تم الحذف", exported: "جاري تجهيز الملف", empty: "ما فيه قوائم تطابق بحثك.",
       miniHead: ["الشركة", "المدينة", "الهاتف", "الحالة"],
       fbQ: "كيف تجربتك مع مسار؟", fbPh: "اكتب ملاحظتك (اختياري)", send: "إرسال", thanks: "شكراً، وصلتنا ملاحظتك.", rate: "قيّم من 5",
-      planFree: "الباقة المجانية", tLeftFree: "رصيدك", firstLine: "ما عندك عملاء لين الحين. ابدأ أول بحث وتطلع أرقامك هنا.", last30: "آخر 30 يوم", sLeftFree: "رصيدك المتبقي", yesterday: "أمس", untitled: "بحث بدون اسم", noLists: "ما عندك قوائم لين الحين. سوّ بحث، أو استورد ملف CSV.", noRows: "القائمة فاضية.", loading: "جاري التحميل…", failed: "ما قدرنا نحفظ", tooBig: "أول 5000 سجل بس ينحفظون"
+      planFree: "الباقة المجانية", planBasic: "الباقة الأساسية", planPremium: "باقة بريميوم", tLeftMonth: "رصيد الشهر", sLeftMonth: "300 عميل كل شهر", sLeftPremium: "وبلا حدود في CLI", tLeftFree: "رصيدك", firstLine: "ما عندك عملاء لين الحين. ابدأ أول بحث وتطلع أرقامك هنا.", last30: "آخر 30 يوم", sLeftFree: "رصيدك المتبقي", yesterday: "أمس", untitled: "بحث بدون اسم", noLists: "ما عندك قوائم لين الحين. سوّ بحث، أو استورد ملف CSV.", noRows: "القائمة فاضية.", loading: "جاري التحميل…", failed: "ما قدرنا نحفظ", tooBig: "أول 5000 سجل بس ينحفظون"
     },
     en: {
       langBtn: "العربية", logout: "Log out", hello: "Welcome back", plan: "Weekly plan", newSearch: "New search",
@@ -212,7 +212,7 @@
       srcMasar: "Masar", srcCsv: "CSV file", srcManual: "Manual", srcHub: "HubSpot", today: "Today", newName: "New list", imported: (n, r) => "Imported " + n + " (" + r + " records)", deleted: "Deleted", exported: "Preparing your file", empty: "No lists match your search.",
       miniHead: ["Business", "City", "Phone", "Status"],
       fbQ: "How is Masar working for you?", fbPh: "Add a note (optional)", send: "Send", thanks: "Thanks, we got your feedback.", rate: "Rate out of 5",
-      planFree: "Free plan", tLeftFree: "Your credits", firstLine: "No leads yet. Run your first search and your numbers show up here.", last30: "Last 30 days", sLeftFree: "Leads left", yesterday: "Yesterday", untitled: "Untitled search", noLists: "No lists yet. Run a search or import a CSV file.", noRows: "This list is empty.", loading: "Loading…", failed: "Could not save", tooBig: "Only the first 5,000 rows are kept"
+      planFree: "Free plan", planBasic: "Basic plan", planPremium: "Premium plan", tLeftMonth: "Credits this month", sLeftMonth: "300 leads every month", sLeftPremium: "Unlimited in the CLI", tLeftFree: "Your credits", firstLine: "No leads yet. Run your first search and your numbers show up here.", last30: "Last 30 days", sLeftFree: "Leads left", yesterday: "Yesterday", untitled: "Untitled search", noLists: "No lists yet. Run a search or import a CSV file.", noRows: "This list is empty.", loading: "Loading…", failed: "Could not save", tooBig: "Only the first 5,000 rows are kept"
     }
   };
   const d = () => D[M.lang];
@@ -271,7 +271,8 @@
   function renderOverview() {
     const t = d(), week = WEEK.reduce((a, b) => a + b, 0), goal = setup.leads;
     $("#hello").textContent = t.hello + (DATA.username ? (M.lang === "ar" ? "، " : ", ") + DATA.username : "");
-    $("#planBadge").textContent = ACC.plan === "weekly" ? t.plan : t.planFree;
+    const paid = ACC.plan === "basic" || ACC.plan === "premium";
+    $("#planBadge").textContent = ({ weekly: t.plan, basic: t.planBasic, premium: t.planPremium })[ACC.plan] || t.planFree;
     $("#vWeek").textContent = M.fmt(week);
     $("#sWeek").textContent = t.ofGoal(goal);
     $("#mWeek").style.width = Math.min(100, (week / goal) * 100) + "%";
@@ -280,10 +281,10 @@
     const ch = ST.prev30 ? Math.round(((ST.month30 - ST.prev30) / ST.prev30) * 100) : null;
     $("#sMonth").innerHTML = ch === null ? esc(t.last30) : '<span class="' + (ch >= 0 ? "up" : "down") + ' num">' + (ch >= 0 ? "+" : "") + ch + "%</span> " + esc(t.vsLast);
     $("#vTotal").textContent = M.fmt(ST.total);
-    const cap = ACC.plan === "weekly" ? 100 : Math.max(10, ACC.credits);
+    const cap = paid ? 300 : ACC.plan === "weekly" ? 100 : Math.max(10, ACC.credits);
     $("#vLeft").innerHTML = M.fmt(ACC.credits) + ' <span class="muted" style="font-size:16px">/ ' + cap + "</span>";
-    $("#sLeft").textContent = ACC.plan === "weekly" ? t.sLeft : t.sLeftFree;
-    $("[data-t=tLeft]").textContent = ACC.plan === "weekly" ? t.tLeft : t.tLeftFree;
+    $("#sLeft").textContent = ACC.plan === "premium" ? t.sLeftPremium : paid ? t.sLeftMonth : ACC.plan === "weekly" ? t.sLeft : t.sLeftFree;
+    $("[data-t=tLeft]").textContent = paid ? t.tLeftMonth : ACC.plan === "weekly" ? t.tLeft : t.tLeftFree;
     $("#mLeft").style.width = Math.min(100, (ACC.credits / cap) * 100) + "%";
     if (state.range === "week") M.bars($("#usageChart"), WEEK, dayNames(), { goal: Math.round(goal / 7), label: t.usage });
     else M.bars($("#usageChart"), MONTH, t.weeks, { goal: goal, label: t.usage });

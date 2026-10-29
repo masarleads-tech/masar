@@ -73,7 +73,7 @@ export function Landing({ t, lang, onLang }: { t: Strings; lang: Lang; onLang: (
             </div>
             <div className="fade-up mt-10 max-w-md border-t border-stone-300 pt-5" style={{ animationDelay: "320ms" }}>
               <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-                <span><b className="text-[22px] font-semibold tabular-nums">100</b> <span className="text-muted text-sm">{c.weekly}</span></span>
+                <span><b className="text-[22px] font-semibold tabular-nums">300</b> <span className="text-muted text-sm">{c.weekly}</span></span>
                 <span className="hidden h-6 w-px bg-stone-300 sm:block" />
                 <span><b className="text-[22px] font-semibold">{PRICE[lang]}</b> <span className="text-muted text-sm">{c.perMonth}</span></span>
               </div>
@@ -150,7 +150,7 @@ export function Landing({ t, lang, onLang }: { t: Strings; lang: Lang; onLang: (
               </div>
               <div className="mt-2 text-sm text-white/70">{c.planAmount}</div>
               <Ticks items={c.planFeatures} dark />
-              <a href={`mailto:${CONTACT_EMAIL}?subject=Masar%20weekly%20plan`} className="btn-primary mt-8 w-full">{c.planCta}</a>
+              <a href={`mailto:${CONTACT_EMAIL}?subject=Masar%20Basic%20or%20Premium`} className="btn-primary mt-8 w-full">{c.planCta}</a>
               <p className="mt-3 text-xs text-white/50">{c.offerNote} <a href="/legal/terms" className="underline underline-offset-2 hover:text-white">{c.terms}</a></p>
             </div>
           </div>
