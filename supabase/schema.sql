@@ -12,7 +12,7 @@ create table if not exists public.profiles (
   email text,
   credits integer not null default 0 check (credits >= 0),
   trial_given boolean not null default false,
-  plan text not null default 'free' check (plan in ('free', 'weekly')),
+  plan text not null default 'free' check (plan in ('free', 'weekly', 'basic', 'premium')),
   plan_until timestamptz,
   week_started timestamptz,
   is_admin boolean not null default false,
@@ -28,16 +28,27 @@ grant select on public.profiles to authenticated;
 drop policy if exists "read own profile" on public.profiles;
 create policy "read own profile" on public.profiles for select using (id = public.current_user_id());
 
--- Weekly plan: the balance is set to 100 at the start of each 7-day week while the plan is active.
--- Unused leads do not carry over. When the plan ends, the account goes back to free.
+-- Plans:
+--   free     10 leads once (the trial), nothing after that.
+--   weekly   the balance is set to 100 at the start of each 7-day week (older plan, kept for existing members).
+--   basic    the balance is set to 300 at the start of each 30-day month. One lead uses one credit, on the website and in the CLI.
+--   premium  the same 300 a month on the website, and leads found with the CLI are free (the member's own AI does the work).
+-- Unused leads do not carry over. When a paid plan ends, the account goes back to free.
+alter table public.profiles add column if not exists month_started timestamptz;
+alter table public.profiles drop constraint if exists profiles_plan_check;
+alter table public.profiles add constraint profiles_plan_check check (plan in ('free', 'weekly', 'basic', 'premium'));
+
 create or replace function public.refresh_plan(uid text) returns void
 language plpgsql security definer set search_path = public as $$
 begin
   update public.profiles set plan = 'free'
-  where id = uid and plan = 'weekly' and plan_until is not null and plan_until < now();
+  where id = uid and plan <> 'free' and plan_until is not null and plan_until < now();
   update public.profiles set credits = 100, week_started = now()
   where id = uid and plan = 'weekly'
     and (week_started is null or week_started <= now() - interval '7 days');
+  update public.profiles set credits = 300, month_started = now()
+  where id = uid and plan in ('basic', 'premium')
+    and (month_started is null or month_started <= now() - interval '30 days');
 end $$;
 
 -- The signed-in user's account. The first call creates it with the 10-lead free trial.
@@ -177,6 +188,28 @@ begin
   end if;
 end $$;
 
+-- Start or extend the basic or premium plan for `months` months of 30 days (0 ends it now).
+create or replace function public.admin_set_plan(target_email text, new_plan text, months integer) returns void
+language plpgsql security definer set search_path = public as $$
+declare uid text;
+begin
+  perform public.assert_admin();
+  if new_plan not in ('basic', 'premium') then raise exception 'Plan must be basic or premium'; end if;
+  uid := public.account_by_email(target_email);
+  if uid is null then raise exception 'No account with that email'; end if;
+  if months <= 0 then
+    update public.profiles set plan = 'free', plan_until = null where id = uid;
+  else
+    update public.profiles set
+      plan_until = case when plan = new_plan then greatest(coalesce(plan_until, now()), now()) else now() end
+        + make_interval(days => 30 * months),
+      month_started = case when plan in ('basic', 'premium') then month_started else null end,
+      plan = new_plan
+    where id = uid;
+    perform public.refresh_plan(uid);
+  end if;
+end $$;
+
 create or replace function public.admin_add_credits(target_email text, amount integer) returns void
 language plpgsql security definer set search_path = public as $$
 declare uid text;
@@ -211,6 +244,7 @@ revoke all on function public.account_by_email(text) from public, anon, authenti
 revoke all on function public.admin_list_users() from public, anon;
 revoke all on function public.admin_set_weekly(text, integer) from public, anon;
 revoke all on function public.admin_add_credits(text, integer) from public, anon;
+revoke all on function public.admin_set_plan(text, text, integer) from public, anon;
 revoke all on function public.admin_set_key(text, text) from public, anon;
 grant execute on function public.current_user_id() to authenticated;
 grant execute on function public.my_account() to authenticated;
@@ -218,6 +252,7 @@ grant execute on function public.charge_credits(integer) to authenticated;
 grant execute on function public.admin_list_users() to authenticated;
 grant execute on function public.admin_set_weekly(text, integer) to authenticated;
 grant execute on function public.admin_add_credits(text, integer) to authenticated;
+grant execute on function public.admin_set_plan(text, text, integer) to authenticated;
 grant execute on function public.admin_set_key(text, text) to authenticated;
 
 
@@ -284,3 +319,90 @@ drop policy if exists "admins read feedback" on public.feedback;
 create policy "admins read feedback" on public.feedback for select
   using (exists (select 1 from public.profiles where id = public.current_user_id() and is_admin));
 grant select, insert on public.feedback to authenticated;
+
+
+-- ---------- Masar CLI: sign-in from the terminal, connected computers and usage ----------
+-- The CLI runs on the member's own computer with their own AI (Claude, Codex, Ollama…).
+-- It signs in with a one-time code the member approves on the website, then holds a long-lived token.
+-- Only the website's server touches these tables (service role key); the browser reads its own rows.
+
+-- One row per sign-in attempt. The CLI keeps device_code secret; the member types or clicks user_code.
+create table if not exists public.cli_device_codes (
+  device_hash text primary key,
+  user_code text not null unique,
+  user_id text references public.profiles (id) on delete cascade,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'denied', 'used')),
+  client_name text not null default '',
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+alter table public.cli_device_codes enable row level security;
+
+-- One row per signed-in computer. Only a SHA-256 hash of the token is kept.
+create table if not exists public.cli_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.profiles (id) on delete cascade,
+  token_hash text not null unique,
+  device_name text not null default '',
+  ai_provider text not null default '',
+  ai_model text not null default '',
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz,
+  revoked_at timestamptz
+);
+create index if not exists cli_tokens_user_idx on public.cli_tokens (user_id, created_at desc);
+alter table public.cli_tokens enable row level security;
+drop policy if exists "read own cli tokens" on public.cli_tokens;
+create policy "read own cli tokens" on public.cli_tokens for select using (user_id = public.current_user_id());
+grant select (id, user_id, device_name, ai_provider, ai_model, created_at, last_used_at, revoked_at) on public.cli_tokens to authenticated;
+
+-- One row per CLI search: which AI and agents ran, how much it found, saved and charged.
+create table if not exists public.cli_usage (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.profiles (id) on delete cascade,
+  token_id uuid references public.cli_tokens (id) on delete set null,
+  search_id uuid references public.searches (id) on delete set null,
+  ai_provider text not null default '',
+  ai_model text not null default '',
+  agents text[] not null default '{}',
+  leads_found integer not null default 0,
+  leads_saved integer not null default 0,
+  credits_used integer not null default 0,
+  input_tokens bigint not null default 0,
+  output_tokens bigint not null default 0,
+  web_searches integer not null default 0,
+  duration_ms integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create index if not exists cli_usage_user_idx on public.cli_usage (user_id, created_at desc);
+alter table public.cli_usage enable row level security;
+drop policy if exists "read own cli usage" on public.cli_usage;
+create policy "read own cli usage" on public.cli_usage for select using (user_id = public.current_user_id());
+grant select on public.cli_usage to authenticated;
+
+-- The same as my_account() and charge_credits(), for a user id the server has already checked
+-- (from a CLI token). Only the service role can call these.
+create or replace function public.account_for(uid text)
+returns table (email text, credits integer, plan text, plan_until timestamptz, week_started timestamptz)
+language plpgsql security definer set search_path = public as $$
+begin
+  perform public.refresh_plan(uid);
+  return query select p.email, p.credits, p.plan, p.plan_until, p.week_started from public.profiles p where p.id = uid;
+end $$;
+
+create or replace function public.charge_credits_for(uid text, wanted integer) returns integer
+language plpgsql security definer set search_path = public as $$
+declare have integer; taken integer;
+begin
+  if wanted is null or wanted <= 0 or uid is null then return 0; end if;
+  perform public.refresh_plan(uid);
+  select credits into have from public.profiles where id = uid for update;
+  taken := least(coalesce(have, 0), wanted);
+  update public.profiles set credits = credits - taken where id = uid;
+  return taken;
+end $$;
+
+revoke all on function public.account_for(text) from public, anon, authenticated;
+revoke all on function public.charge_credits_for(text, integer) from public, anon, authenticated;
+grant execute on function public.account_for(text) to service_role;
+grant execute on function public.charge_credits_for(text, integer) to service_role;
