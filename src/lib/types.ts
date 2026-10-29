@@ -61,6 +61,13 @@ export interface Lead {
   fitReasons: string[];
   closing: number;
   closingReasons: string[];
+  /** From the Masar CLI's documenter agent: how well the lead matches the member's need (0-100), why, how much of it was verified (0-100), and the final rank. */
+  compatibility?: number;
+  /** Where each detail came from (source, field, page), filled by the collectors. */
+  provenance?: { source: string; field: string; url: string | null; at: string }[];
+  compatibilityReason?: string;
+  verified?: number;
+  rank?: number;
   /** Set when the lead is saved in the database. */
   rowId?: string;
   outcome?: Outcome;
@@ -78,12 +85,17 @@ export interface SearchSummary {
   leadCount: number;
 }
 
+/** One agent's report from a search (see src/core/schemas.ts). */
+export type { AgentReport } from "../core/schemas";
+
 export interface DiscoverResponse {
   /** The saved search these leads belong to; null when accounts are off. */
   searchId: string | null;
   leads: Lead[];
   sourcesUsed: string[];
   warnings: string[];
+  /** What each agent did: ok, partial, error, timeout, unsupported or disabled, with a reason. */
+  agents?: import("../core/schemas").AgentReport[];
 }
 
 export interface EnrichResponse {
@@ -91,6 +103,8 @@ export interface EnrichResponse {
   usage: { inputTokens: number; outputTokens: number; webSearches: number };
   /** Leads left on the account after this batch; null when accounts are off. */
   creditsLeft: number | null;
+  warnings?: string[];
+  agents?: import("../core/schemas").AgentReport[];
 }
 
 /** The signed-in user's account, as /api/config returns it. */
@@ -111,4 +125,6 @@ export interface SiteConfig {
   allowUserKeys: boolean;
   hasServerClaudeKey: boolean;
   hasServerGoogleKey: boolean;
+  /** Starting search criteria from the member's setup tour answers. */
+  defaults?: Partial<Brief>;
 }

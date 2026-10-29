@@ -1,0 +1,25 @@
+{
+  "name": "masar-cli",
+  "version": "0.1.0",
+  "description": "Masar in your terminal: find and rank B2B leads in the Middle East with your own AI (Claude, Codex, OpenAI or a local model).",
+  "license": "UNLICENSED",
+  "private": true,
+  "bin": {
+    "masar": "bin/masar.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.3"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "pack": "node scripts/pack.mjs"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

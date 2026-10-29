@@ -406,3 +406,40 @@ revoke all on function public.account_for(text) from public, anon, authenticated
 revoke all on function public.charge_credits_for(text, integer) from public, anon, authenticated;
 grant execute on function public.account_for(text) to service_role;
 grant execute on function public.charge_credits_for(text, integer) to service_role;
+
+
+-- ---------- Everything the agents collect, filed by category ----------
+-- Every business any collector finds for a search is kept here (stage 'found'); the ones checked and
+-- saved to the member's list are marked 'checked'. category = the industry key searched for
+-- (or 'custom:<words>'), business_type = the business's own type, sources = which agents found it.
+create table if not exists public.collected_leads (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.profiles (id) on delete cascade,
+  search_id uuid not null references public.searches (id) on delete cascade,
+  lead_key text not null,
+  name text not null,
+  category text not null,
+  business_type text,
+  city text not null default '',
+  sources text[] not null default '{}',
+  stage text not null default 'found' check (stage in ('found', 'checked')),
+  data jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (search_id, lead_key)
+);
+create index if not exists collected_leads_user_category_idx on public.collected_leads (user_id, category, created_at desc);
+create index if not exists collected_leads_user_city_idx on public.collected_leads (user_id, city);
+alter table public.collected_leads enable row level security;
+drop policy if exists "own collected leads" on public.collected_leads;
+create policy "own collected leads" on public.collected_leads for all
+  using (user_id = public.current_user_id())
+  with check (user_id = public.current_user_id() and exists (
+    select 1 from public.searches s where s.id = search_id and s.user_id = public.current_user_id()));
+grant select, insert, update, delete on public.collected_leads to authenticated;
+
+-- Saved leads carry the same category, city and sources, so lists can be filtered by them.
+alter table public.leads add column if not exists category text;
+alter table public.leads add column if not exists city text;
+alter table public.leads add column if not exists sources text[] not null default '{}';
+create index if not exists leads_user_category_idx on public.leads (user_id, category);

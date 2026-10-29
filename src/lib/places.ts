@@ -23,8 +23,9 @@ interface Place {
   businessStatus?: string;
 }
 
-async function searchText(apiKey: string, textQuery: string, pageToken?: string) {
-  const res = await fetch(ENDPOINT, {
+async function searchText(fetchFn: typeof fetch, apiKey: string, textQuery: string, pageToken?: string, signal?: AbortSignal) {
+  const res = await fetchFn(ENDPOINT, {
+    signal,
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": FIELDS },
     body: JSON.stringify({ textQuery, pageSize: 20, ...(pageToken ? { pageToken } : {}) }),
@@ -44,14 +45,14 @@ export function queriesFor(brief: Brief, city: string): string[] {
 }
 
 /** Find businesses on Google Maps. Up to 3 pages (60 results) per query. */
-export async function discoverPlaces(apiKey: string, brief: Brief, maxRequests = 24): Promise<Lead[]> {
+export async function discoverPlaces(apiKey: string, brief: Brief, maxRequests = 24, fetchFn: typeof fetch = fetch, signal?: AbortSignal): Promise<Lead[]> {
   const out = new Map<string, Lead>();
   let requests = 0;
   for (const city of brief.locations) {
     for (const q of queriesFor(brief, city)) {
       let token: string | undefined;
       for (let page = 0; page < 3 && requests < maxRequests; page++) {
-        const data = await searchText(apiKey, q, token);
+        const data = await searchText(fetchFn, apiKey, q, token, signal);
         requests++;
         for (const p of data.places ?? []) {
           if (p.businessStatus && p.businessStatus !== "OPERATIONAL") continue;

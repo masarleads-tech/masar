@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["ES2022", "DOM"],
+    "rootDir": "..",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "typeRoots": ["../node_modules/@types"]
+  },
+  "include": ["src/**/*.ts", "../src/lib/lead.ts", "../src/lib/industries.ts", "../src/lib/types.ts"]
+}

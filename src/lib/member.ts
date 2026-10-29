@@ -7,7 +7,7 @@ import { requireUser } from "./server";
 import { accountsEnabled } from "./supabase/env";
 
 /** Pages built as plain HTML (setup tour, dashboard, download) live in src/html and are sent by route handlers. */
-export async function htmlPage(name: "home" | "welcome" | "dashboard" | "cli", data?: unknown) {
+export async function htmlPage(name: "home" | "welcome" | "dashboard" | "cli" | "cli-connect", data?: unknown) {
   let html = await readFile(path.join(process.cwd(), "src/html", `${name}.html`), "utf8");
   html = html.replace('href="app.css"', 'href="/app/app.css"');
   const json = data === undefined ? "" : JSON.stringify(data).replace(/</g, "\\u003c").replace(/\u2028|\u2029/g, "");
@@ -130,11 +130,37 @@ async function memberLists(supabase: SupabaseClient): Promise<ListRow[]> {
   return [...a, ...b].sort((x, y) => y.at.localeCompare(x.at));
 }
 
+/** The member's Masar CLI: signed-in computers, the AI each one uses, and the last 30 days of CLI searches. */
+async function cliStats(supabase: SupabaseClient) {
+  const since = new Date(Date.now() - 30 * DAY).toISOString();
+  const [{ data: devices, error }, { data: runs }] = await Promise.all([
+    supabase.from("cli_tokens").select("id, device_name, ai_provider, ai_model, last_used_at, created_at")
+      .is("revoked_at", null).order("created_at", { ascending: false }).limit(20),
+    supabase.from("cli_usage").select("ai_provider, leads_saved, credits_used, input_tokens, output_tokens, created_at")
+      .gte("created_at", since).order("created_at", { ascending: false }).limit(1000),
+  ]);
+  if (error) return null; // Before the CLI tables are added in Supabase.
+  const r = runs ?? [];
+  const sum = (k: "leads_saved" | "credits_used" | "input_tokens" | "output_tokens") => r.reduce((n, x) => n + Number(x[k] ?? 0), 0);
+  const last = (devices ?? []).map((d) => d.last_used_at as string | null).filter(Boolean).sort().pop() ?? null;
+  return {
+    connected: (devices ?? []).length > 0,
+    devices: devices ?? [],
+    provider: (r[0]?.ai_provider as string | undefined) ?? (devices?.[0]?.ai_provider as string | undefined) ?? null,
+    lastUsedAt: last,
+    runs30: r.length,
+    leads30: sum("leads_saved"),
+    credits30: sum("credits_used"),
+    tokens30: sum("input_tokens") + sum("output_tokens"),
+  };
+}
+
 export async function dashboardData(supabase: SupabaseClient, userId: string) {
   const setup = await ensureSetup(supabase, userId);
   const [{ data: acc }, stats, lists] = await Promise.all([
     supabase.rpc("my_account"), leadStats(supabase), memberLists(supabase),
   ]);
+  const cli = await cliStats(supabase).catch(() => null);
   const a = Array.isArray(acc) && acc[0] ? acc[0] : {};
   return {
     username: setup.username ?? null,
@@ -142,5 +168,6 @@ export async function dashboardData(supabase: SupabaseClient, userId: string) {
     account: { credits: Number(a.credits ?? 0), plan: ["weekly", "basic", "premium"].includes(a.plan) ? a.plan : "free", until: a.plan_until ?? null },
     stats,
     lists,
+    cli,
   };
 }
