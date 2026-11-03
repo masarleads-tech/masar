@@ -67,12 +67,13 @@ async function logOut() {
   location.href = "/";
 }
 
-export type NavKey = "search" | "results" | "history" | "admin" | "account";
+export type NavKey = "search" | "results" | "history" | "billing" | "admin" | "account";
 
 const ICONS: Record<NavKey, string> = {
   search: "M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z",
   results: "M5 7h14M5 12h14M5 17h9",
   history: "M12 7v5l3 2M21 12a9 9 0 1 1-3-6.7M21 4v4h-4",
+  billing: "M3 7h18v10H3zM3 11h18M7 15h3",
   admin: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z",
   account: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
 };
@@ -97,6 +98,7 @@ export function AppShell({ t, lang, config, active, onLang, onNav, onKeys, child
   const user = config?.user ?? null;
   const items: [NavKey, string][] = [["search", t.navSearch], ["results", t.navResults]];
   if (config?.accountsEnabled) items.push(["history", t.navHistory]);
+  if (user) items.push(["billing", t.navBilling]);
   if (user?.isAdmin) items.push(["admin", t.admin]);
 
   const go = (k: NavKey) => {
@@ -104,6 +106,7 @@ export function AppShell({ t, lang, config, active, onLang, onNav, onKeys, child
     if (k === "account") return setSheet(true);
     if (k === "admin") location.href = "/admin";
     else if (k === "history") location.href = "/history";
+    else if (k === "billing") location.href = "/billing";
     else if (onNav) onNav(k);
     else location.href = k === "results" ? "/?view=results" : "/?new=1";
   };
@@ -122,7 +125,7 @@ export function AppShell({ t, lang, config, active, onLang, onNav, onKeys, child
     </div>
   );
 
-  const mobileTabs: [NavKey, string][] = [...items.filter(([k]) => k !== "admin"), ["account", t.account]];
+  const mobileTabs: [NavKey, string][] = [...items.filter(([k]) => k !== "admin" && k !== "billing"), ["account", t.account]];
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[256px_1fr]">
@@ -195,9 +198,9 @@ function CreditsCard({ t, config }: { t: Strings; config: SiteConfig }) {
       {u.plan === "weekly" && refill && <div className="mt-2 text-xs text-white/55">{t.renews} {fmtDate(t, refill, { day: "numeric", month: "short" })}</div>}
       {paid && u.planUntil && <div className="mt-2 text-xs text-white/55">{t.until} {fmtDate(t, new Date(u.planUntil), { day: "numeric", month: "short" })}</div>}
       {u.plan === "premium" && <div className="mt-1 text-xs text-mint-400">{t.premiumCli}</div>}
-      {u.plan === "free" && (
-        <a href={`mailto:${CONTACT_EMAIL}?subject=Masar%20Basic%20or%20Premium`} className="mt-3 flex min-h-10 items-center justify-center rounded-[6px] bg-teal-700 text-xs font-semibold text-white hover:bg-teal-800">{t.subscribe}</a>
-      )}
+      {paid
+        ? <a href="/billing" className="mt-2 block text-xs font-semibold text-mint-400 hover:underline">{t.extendPlan}</a>
+        : <a href="/billing" className="mt-3 flex min-h-10 items-center justify-center rounded-[6px] bg-teal-700 text-xs font-semibold text-white hover:bg-teal-800">{t.subscribe}</a>}
     </div>
   );
 }

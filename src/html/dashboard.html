@@ -79,7 +79,7 @@
         <p class="hello-line" id="helloLine"></p>
       </div>
       <div class="tb-end">
-        <span class="badge" id="planBadge"></span>
+        <a class="badge" id="planBadge" href="/billing" style="text-decoration:none"></a>
         <button class="btn sm tabs-only" type="button" data-lang-toggle data-t="langBtn" style="display:none"></button>
         <a class="btn mint sm" href="#" id="newSearch" data-t="newSearch"></a>
       </div>
@@ -187,7 +187,7 @@
       srcMasar: "مسار", srcCsv: "ملف CSV", srcManual: "يدوي", srcHub: "HubSpot", today: "اليوم", newName: "قائمة جديدة", imported: (n, r) => "تم استيراد " + n + " (" + r + " سجل)", deleted: "تم الحذف", exported: "جاري تجهيز الملف", empty: "ما فيه قوائم تطابق بحثك.",
       miniHead: ["الشركة", "المدينة", "الهاتف", "الحالة"],
       fbQ: "كيف تجربتك مع مسار؟", fbPh: "اكتب ملاحظتك (اختياري)", send: "إرسال", thanks: "شكراً، وصلتنا ملاحظتك.", rate: "قيّم من 5",
-      planFree: "الباقة المجانية", planBasic: "الباقة الأساسية", planPremium: "باقة بريميوم", tLeftMonth: "رصيد الشهر", sLeftMonth: "300 عميل كل شهر", sLeftPremium: "وبلا حدود في CLI", tLeftFree: "رصيدك", firstLine: "ما عندك عملاء لين الحين. ابدأ أول بحث وتطلع أرقامك هنا.", last30: "آخر 30 يوم", sLeftFree: "رصيدك المتبقي", yesterday: "أمس", untitled: "بحث بدون اسم", noLists: "ما عندك قوائم لين الحين. سوّ بحث، أو استورد ملف CSV.", noRows: "القائمة فاضية.", loading: "جاري التحميل…", failed: "ما قدرنا نحفظ", tooBig: "أول 5000 سجل بس ينحفظون"
+      planFree: "الباقة المجانية", upgrade: "رقّ باقتك", planBasic: "الباقة الأساسية", planPremium: "باقة بريميوم", tLeftMonth: "رصيد الشهر", sLeftMonth: "300 عميل كل شهر", sLeftPremium: "وبلا حدود في CLI", tLeftFree: "رصيدك", firstLine: "ما عندك عملاء لين الحين. ابدأ أول بحث وتطلع أرقامك هنا.", last30: "آخر 30 يوم", sLeftFree: "رصيدك المتبقي", yesterday: "أمس", untitled: "بحث بدون اسم", noLists: "ما عندك قوائم لين الحين. سوّ بحث، أو استورد ملف CSV.", noRows: "القائمة فاضية.", loading: "جاري التحميل…", failed: "ما قدرنا نحفظ", tooBig: "أول 5000 سجل بس ينحفظون"
     },
     en: {
       langBtn: "العربية", logout: "Log out", hello: "Welcome back", plan: "Weekly plan", newSearch: "New search",
@@ -212,7 +212,7 @@
       srcMasar: "Masar", srcCsv: "CSV file", srcManual: "Manual", srcHub: "HubSpot", today: "Today", newName: "New list", imported: (n, r) => "Imported " + n + " (" + r + " records)", deleted: "Deleted", exported: "Preparing your file", empty: "No lists match your search.",
       miniHead: ["Business", "City", "Phone", "Status"],
       fbQ: "How is Masar working for you?", fbPh: "Add a note (optional)", send: "Send", thanks: "Thanks, we got your feedback.", rate: "Rate out of 5",
-      planFree: "Free plan", planBasic: "Basic plan", planPremium: "Premium plan", tLeftMonth: "Credits this month", sLeftMonth: "300 leads every month", sLeftPremium: "Unlimited in the CLI", tLeftFree: "Your credits", firstLine: "No leads yet. Run your first search and your numbers show up here.", last30: "Last 30 days", sLeftFree: "Leads left", yesterday: "Yesterday", untitled: "Untitled search", noLists: "No lists yet. Run a search or import a CSV file.", noRows: "This list is empty.", loading: "Loading…", failed: "Could not save", tooBig: "Only the first 5,000 rows are kept"
+      planFree: "Free plan", upgrade: "Upgrade", planBasic: "Basic plan", planPremium: "Premium plan", tLeftMonth: "Credits this month", sLeftMonth: "300 leads every month", sLeftPremium: "Unlimited in the CLI", tLeftFree: "Your credits", firstLine: "No leads yet. Run your first search and your numbers show up here.", last30: "Last 30 days", sLeftFree: "Leads left", yesterday: "Yesterday", untitled: "Untitled search", noLists: "No lists yet. Run a search or import a CSV file.", noRows: "This list is empty.", loading: "Loading…", failed: "Could not save", tooBig: "Only the first 5,000 rows are kept"
     }
   };
   const d = () => D[M.lang];
@@ -272,7 +272,7 @@
     const t = d(), week = WEEK.reduce((a, b) => a + b, 0), goal = setup.leads;
     $("#hello").textContent = t.hello + (DATA.username ? (M.lang === "ar" ? "، " : ", ") + DATA.username : "");
     const paid = ACC.plan === "basic" || ACC.plan === "premium";
-    $("#planBadge").textContent = ({ weekly: t.plan, basic: t.planBasic, premium: t.planPremium })[ACC.plan] || t.planFree;
+    $("#planBadge").textContent = (({ weekly: t.plan, basic: t.planBasic, premium: t.planPremium })[ACC.plan] || t.planFree) + (paid ? "" : " · " + t.upgrade);
     $("#vWeek").textContent = M.fmt(week);
     $("#sWeek").textContent = t.ofGoal(goal);
     $("#mWeek").style.width = Math.min(100, (week / goal) * 100) + "%";

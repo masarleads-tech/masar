@@ -17,6 +17,8 @@ export interface Me {
   cliLeadsFree: boolean;
   setup: { industries?: string[]; ideal_customer?: string; cities?: string[]; leads_per_week?: number; currency?: string; deal_size?: number } | null;
   dashboardUrl: string;
+  /** Older servers leave it out; use billingUrl(cfg, me). */
+  billingUrl?: string;
 }
 
 export interface SaveResult {

@@ -75,7 +75,7 @@ export const LANDING = {
     planName: "Basic plan",
     planAmount: "300 leads each month · Premium adds unlimited leads in the CLI",
     planFeatures: ["Refilled every 7 days; unused leads do not carry over", "Every search and lead saved to your account", "Lead status tracking on desktop and mobile"],
-    planCta: "Talk to us",
+    planCta: "Choose a plan",
     terms: "Terms",
     tipsTitle: "Tips for your first conversations",
     tips: [
@@ -153,7 +153,7 @@ export const LANDING = {
     planName: "الباقة الأساسية",
     planAmount: "300 عميل كل شهر · وبريميوم تضيف عملاء بلا حدود في CLI",
     planFeatures: ["يتجدد الرصيد كل 7 أيام ولا يُرحّل غير المستخدم", "كل بحث وعميل محفوظ في حسابك", "متابعة حالة العملاء من الحاسوب والجوال"],
-    planCta: "تواصل معنا",
+    planCta: "اختر باقتك",
     terms: "الشروط",
     tipsTitle: "نصائح لمحادثاتك الأولى",
     tips: [

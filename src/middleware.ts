@@ -15,7 +15,11 @@ const clerk = clerkMiddleware(async (auth, req) => {
   if (pathname !== "/" && pathname !== "/login") return;
   const { userId } = await auth();
   if (!userId) return pathname === "/" ? story(req) : undefined;
-  if (pathname === "/login" || !search) return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (pathname === "/login") {
+    const next = req.nextUrl.searchParams.get("next") ?? "";
+    return NextResponse.redirect(new URL(/^\/(?!\/)[\w\-/?=&.%]*$/.test(next) ? next : "/dashboard", req.url));
+  }
+  if (!search) return NextResponse.redirect(new URL("/dashboard", req.url));
 });
 
 /**

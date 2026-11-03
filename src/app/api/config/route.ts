@@ -1,5 +1,6 @@
 import { briefFromSetup } from "@/core/brief";
 import { customerKey } from "@/lib/server";
+import { publicPaypalConfig } from "@/lib/paypal";
 import type { UserInfo } from "@/lib/types";
 import { accountsEnabled } from "@/lib/supabase/env";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -39,5 +40,6 @@ export async function GET() {
     hasServerClaudeKey: !!process.env.ANTHROPIC_API_KEY || hasOwnKey,
     hasServerGoogleKey: !!process.env.GOOGLE_MAPS_API_KEY,
     defaults,
+    paypal: publicPaypalConfig(),
   });
 }
