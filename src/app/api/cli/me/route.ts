@@ -18,7 +18,6 @@ export async function GET(req: Request) {
       cliLeadsFree: cliLeadsAreFree(me.plan),
       setup: setup ?? null,
       dashboardUrl: `${site}/dashboard`,
-      billingUrl: `${site}/billing`,
     });
   } catch (e) {
     return errorResponse(e);

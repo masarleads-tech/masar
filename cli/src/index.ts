@@ -25,8 +25,6 @@ function openBrowser(url: string) {
   try { spawn(cmd, args, { stdio: "ignore", detached: true, windowsHide: true }).on("error", () => {}).unref(); } catch { /* print the link instead */ }
 }
 
-const billingUrl = (cfg: Config, me?: Me, plan?: "basic" | "premium") => (me?.billingUrl ?? `${cfg.site}/billing`) + (plan ? `?plan=${plan}` : "");
-
 // ---------- Commands ----------
 
 async function login(cfg: Config) {
@@ -79,27 +77,7 @@ async function status(cfg: Config) {
     ["Credits", me.cliLeadsFree ? ui.c.accent("CLI leads are free on your plan") : `${ui.c.strong(String(me.credits))} ${ui.c.muted("left · 1 credit per saved lead")}`],
     ["AI", cfg.ai ? `${PROVIDERS[cfg.ai.provider].label}${cfg.ai.model ? ui.c.muted(` · ${cfg.ai.model}`) : ""}` : ui.c.warn("not chosen yet (masar ai)")],
     ["Dashboard", ui.link(me.dashboardUrl)],
-    [me.plan === "basic" || me.plan === "premium" ? "Extend" : "Upgrade", ui.link(billingUrl(cfg, me)) + ui.c.muted("  (masar upgrade)")],
   ]);
-  ui.print();
-}
-
-/** Opens the website's Plan and billing page, where members pay with PayPal or a card. */
-async function upgrade(cfg: Config) {
-  ui.banner("Plan and billing");
-  let me: Me | undefined;
-  if (cfg.token) me = await api.me(cfg).catch(() => undefined);
-  if (me) ui.facts([["Plan", ui.c.strong(PLAN_NAME[me.plan]) + (me.planUntil ? ui.c.muted(`  until ${new Date(me.planUntil).toLocaleDateString("en-GB")}`) : "")]]);
-  ui.facts([
-    ["Basic", "300 leads a month, on the website and in the CLI"],
-    ["Premium", "300 a month on the website, and CLI leads are free"],
-  ]);
-  const want = words[1] === "premium" || words[1] === "basic" ? words[1] : flags.premium ? "premium" : undefined;
-  const url = billingUrl(cfg, me, want);
-  ui.print();
-  ui.info("Pay with PayPal or a card on the Masar website. Your plan updates here as soon as the payment goes through.");
-  ui.print(ui.link(url));
-  if (!flags["no-browser"]) openBrowser(url);
   ui.print();
 }
 
@@ -164,8 +142,7 @@ async function find(cfg: Config) {
   if (cap <= 0) {
     ui.print();
     ui.fail("You have no credits left this month.");
-    ui.info("Basic gives 300 a month; on Premium, CLI leads are free.");
-    ui.info(`Upgrade with PayPal or a card: ${billingUrl(cfg, me, "premium")}  (or run: masar upgrade)`);
+    ui.info(`Basic gives 300 a month; on Premium, CLI leads are free. See ${me.dashboardUrl}`);
     return;
   }
 
@@ -207,7 +184,7 @@ async function find(cfg: Config) {
         ai: { provider: ai.id, model: cfg.ai?.model ?? "" }, usage: ai.usage, durationMs: result.durationMs,
       });
       sp.done(`Saved ${saved.saved} leads to your dashboard` + (saved.free ? ui.c.muted("  ·  free on Premium") : ui.c.muted(`  ·  ${saved.charged} credits used, ${saved.creditsLeft} left`)));
-      if (saved.skipped) ui.warn(`${saved.skipped} leads were not saved because you ran out of credits. Add more: masar upgrade`);
+      if (saved.skipped) ui.warn(`${saved.skipped} leads were not saved because you ran out of credits.`);
       ui.info(`Open your dashboard: ${saved.dashboardUrl}`);
     } catch (e) {
       sp.fail(`Could not save to Masar: ${e instanceof Error ? e.message : e}`);
@@ -244,7 +221,6 @@ function help() {
     ["masar find \"…\"", "Start with what you need, e.g. masar find \"coffee beans to cafes in Amman\""],
     ["masar status", "Your plan, credits and AI"],
     ["masar open", "Open your dashboard"],
-    ["masar upgrade", "Choose Basic or Premium and pay with PayPal or a card"],
     ["masar doctor", "Check that everything works"],
     ["masar logout", "Sign out on this computer"],
   ]);
@@ -266,7 +242,6 @@ async function main() {
     case "ai": if (words[1] === "test") await testAi(cfg); else await chooseAi(cfg); break;
     case "find": case "search": await find(cfg); break;
     case "open": case "dashboard": openBrowser(`${cfg.site}/dashboard`); ui.info(`${cfg.site}/dashboard`); break;
-    case "upgrade": case "billing": case "plan": case "subscribe": await upgrade(cfg); break;
     case "doctor": await doctor(cfg); break;
     case "help": help(); break;
     case "welcome":
