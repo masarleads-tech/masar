@@ -1,16 +1,9 @@
-"use client";
+import { redirect } from "next/navigation";
+import { accountsEnabled } from "@/lib/supabase/env";
+import SignOut from "./SignOut";
 
-import { useClerk } from "@clerk/nextjs";
-import { useEffect } from "react";
-
-/** Signs the member out, then goes to the home page. */
+/** Signs the member out. With accounts switched off there is no Clerk session (and no Clerk provider): go home. */
 export default function Logout() {
-  const { signOut, loaded } = useClerk();
-  useEffect(() => {
-    if (!loaded) return;
-    // A new anonymous visitor in PostHog, so the next person on this computer isn't counted as this member.
-    (window as { posthog?: { reset: () => void } }).posthog?.reset();
-    signOut({ redirectUrl: "/" });
-  }, [loaded, signOut]);
-  return <main className="grid min-h-screen place-items-center text-sm text-muted">…</main>;
+  if (!accountsEnabled) redirect("/");
+  return <SignOut />;
 }

@@ -39,7 +39,7 @@
 }
 html[lang="en"] { --font: var(--font-en); }
 * { box-sizing: border-box; }
-html { background: var(--bg); }
+html { background: var(--bg); overflow-x: clip; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.65; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
@@ -437,7 +437,7 @@ html:not(.motion) .step:not(.s3) { display: none; }
       s3e: "وين نشتغل", s3h: "الخليج والشرق الأوسط.", s3p: "بحث واحد يغطي الرياض وجدة والدمام والكويت والمنامة والدوحة وأبوظبي ودبي ومسقط وعمّان.",
       st1: "دول الخليج كلها", st2: "لغتين", st3: "عملاء مجاناً للبداية",
       getH: "طريقتين تشتغل فيها مع مسار.", getP: "أداة سطر الأوامر، أو التطبيق الكامل للكمبيوتر والجوال. كلها جاية قريباً.",
-      getCli: "مسار CLI", getCliP: "أداة سطر الأوامر لمن عنده اشتراك Claude Pro أو Max وما عنده مفتاح API. ما تحتاج أي مفتاح.", getCliBtn: "التحميل قريباً", soon: "قريباً",
+      getCli: "مسار CLI", getCliP: "أداة سطر الأوامر تشتغل باشتراكك في Claude Pro أو Max أو ChatGPT، أو بنموذج على جهازك. ما تحتاج أي مفتاح.", getCliBtn: "ثبّته الحين", soon: "قريباً",
       getDesk: "تطبيق الكمبيوتر", getDeskP: "التطبيق الكامل بكل الإعدادات، لماك وويندوز ولينكس.", getMob: "تطبيق الجوال", getMobP: "مسار على الآيفون والأندرويد.",
       shDesk: "حمّل مسار للكمبيوتر", shDeskP: "اختر نظام جهازك.", shMob: "مسار على جوالك", shMobP: "اختر نوع جوالك.",
       mac: "ماك", macS: "macOS 12 أو أحدث · Apple Silicon و Intel", win: "ويندوز", winS: "Windows 10 و 11 · 64-bit", lin: "لينكس", linS: "Ubuntu و Debian · ‎.deb و AppImage",
@@ -474,7 +474,7 @@ html:not(.motion) .step:not(.s3) { display: none; }
       s3e: "Where we work", s3h: "GCC & Middle East.", s3p: "One search covers Riyadh, Jeddah, Dammam, Kuwait, Manama, Doha, Abu Dhabi, Dubai, Muscat and Amman.",
       st1: "GCC countries", st2: "languages", st3: "free leads to start",
       getH: "Two ways to work with Masar.", getP: "A command-line tool, or the full app for computer and phone. Both are coming soon.",
-      getCli: "Masar CLI", getCliP: "The command-line tool for people on Claude Pro or Max who don't have an API key. No key needed.", getCliBtn: "Download coming soon", soon: "Coming soon",
+      getCli: "Masar CLI", getCliP: "The command-line tool that runs on your Claude Pro or Max plan, ChatGPT, or a model on your own computer. No key needed.", getCliBtn: "Install now", soon: "Coming soon",
       getDesk: "Desktop app", getDeskP: "The full app with everything set up, for Mac, Windows and Linux.", getMob: "Phone app", getMobP: "Masar on iPhone and Android.",
       shDesk: "Download Masar for your computer", shDeskP: "Choose your system.", shMob: "Masar on your phone", shMobP: "Choose your phone.",
       mac: "Mac", macS: "macOS 12 or later · Apple Silicon and Intel", win: "Windows", winS: "Windows 10 and 11 · 64-bit", lin: "Linux", linS: "Ubuntu and Debian · .deb and AppImage",

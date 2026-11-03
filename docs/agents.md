@@ -82,3 +82,8 @@ No collector scrapes logged-in pages, gets around blocks or captchas, or rotates
 `npm test` runs the vitest suite in `tests/`: schemas, Boss orchestration (parallel runs, timeouts, partial failures,
 disabled and unsupported collectors), deduplication, scoring, Supabase writes, CLI arguments, and provider boundaries
 with a fake `fetch` (no live calls to any platform).
+
+`supabase/tests/run.sh` checks `supabase/schema.sql` on a scratch PostgreSQL (never the live database): it installs the
+schema twice, then checks the free trial, credits, plans, admin tools and that members, visitors and the server each see
+only what they should. `DATABASE_URL=postgres://… supabase/tests/run.sh`. GitHub runs it, with lint, tests and a build,
+on every pull request (`.github/workflows/checks.yml`).
