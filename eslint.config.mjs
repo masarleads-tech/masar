@@ -19,6 +19,8 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
       "cli/dist/**",
+      // The CLI launcher is plain CommonJS that loads the built CLI.
+      "cli/bin/**",
       "public/cli/**",
     ],
   },

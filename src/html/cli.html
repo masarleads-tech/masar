@@ -23,6 +23,19 @@ html[lang="en"] h1 { letter-spacing: -0.03em; line-height: 1.05; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .btn.soon { background: rgba(216, 166, 87, 0.14); color: #d8a657; border-color: rgba(216, 166, 87, 0.3); cursor: not-allowed; min-height: 44px; padding: 0 20px; }
 .note { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+/* Install steps: each command is shown left-to-right with a copy button */
+.steps { display: grid; gap: 14px; margin: 0 0 22px; padding: 0; list-style: none; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; gap: 7px; }
+.steps li > span { display: flex; gap: 9px; align-items: baseline; color: #cfe0dc; font-weight: 600; }
+.steps li > span::before { content: counter(s); flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(114, 183, 167, 0.16); color: var(--mint); font-size: 12.5px; }
+.steps a { color: var(--mint); }
+.cmd { direction: ltr; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 6px 6px 14px; border-radius: 10px; background: #0a1112; border: 1px solid var(--line); }
+.cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e7f1ee; scrollbar-width: none; }
+.cmd code::-webkit-scrollbar { display: none; }
+.cmd button { flex: none; min-height: 34px; padding: 0 12px; font-size: 13px; }
+.unavailable .steps { display: none; }
+.soon-row { display: none; }
+.unavailable .soon-row { display: flex; }
 .note a { color: var(--mint); }
 /* A terminal window drawn in HTML: always left-to-right */
 .term { direction: ltr; border-radius: 16px; background: #0a1112; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45); overflow: hidden; font: 13.5px/1.75 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
@@ -54,11 +67,19 @@ html[lang="en"] h1 { letter-spacing: -0.03em; line-height: 1.05; }
     <h1 data-t="title"></h1>
     <p class="lead" data-t="lead"></p>
     <ul class="who"><li data-t="w1"></li><li data-t="w2"></li><li data-t="w3"></li></ul>
-    <div class="row">
+    <ol class="steps" id="steps">
+      <li><span><span><span data-t="s1"></span> <a href="https://nodejs.org/en/download" target="_blank" rel="noopener" data-t="s1Link"></a></span></span></li>
+      <li><span data-t="s2"></span><div class="cmd"><code id="cmdInstall"></code><button class="btn sm" type="button" data-copy="cmdInstall" data-t="copy"></button></div></li>
+      <li><span data-t="s3"></span><div class="cmd"><code id="cmdLogin">masar login</code><button class="btn sm" type="button" data-copy="cmdLogin" data-t="copy"></button></div></li>
+      <li><span data-t="s4"></span><div class="cmd"><code id="cmdFind">masar find</code><button class="btn sm" type="button" data-copy="cmdFind" data-t="copy"></button></div></li>
+    </ol>
+    <div class="row soon-row">
       <button class="btn soon" type="button" aria-disabled="true" data-t="soonBtn"></button>
+    </div>
+    <div class="row">
       <a class="btn" href="/login?mode=signup" data-t="web"></a>
     </div>
-    <p class="note"><span data-t="notify"></span> <a href="mailto:masar.leads@gmail.com?subject=Masar%20CLI" dir="ltr">masar.leads@gmail.com</a></p>
+    <p class="note"><span data-t="help"></span> <a href="mailto:masar.leads@gmail.com?subject=Masar%20CLI" dir="ltr">masar.leads@gmail.com</a></p>
   </section>
   <section class="term" aria-hidden="true">
     <div class="bar"><i></i><i></i><i></i></div>
@@ -78,17 +99,19 @@ html[lang="en"] h1 { letter-spacing: -0.03em; line-height: 1.05; }
   const { $ } = Masar;
   const D = {
     ar: {
-      langBtn: "English", eyebrow: "طريقة 1 من 2", title: "مسار CLI", soon: "قريباً", soonBtn: "التحميل قريباً", web: "استخدمه من المتصفح الحين",
-      lead: "أداة سطر الأوامر من مسار، لمن عنده اشتراك Claude Pro أو Max وما عنده مفتاح API.",
-      w1: "ما تحتاج مفتاح API ولا دفع حسب الاستخدام.", w2: "تشتغل على ويندوز وماك ولينكس.", w3: "نفس العملاء المرتبين حسب فرصة الإغلاق، وتحفظهم في ملف Excel.",
-      notify: "تبي نعلمك أول ما تنزل؟ راسلنا:",
+      langBtn: "English", eyebrow: "طريقة 1 من 2", title: "مسار CLI", soon: "قريباً", soonBtn: "التحميل قريباً", web: "أو استخدم مسار من المتصفح",
+      lead: "أداة سطر الأوامر من مسار، تشتغل بالذكاء الاصطناعي اللي عندك: اشتراك Claude Pro أو Max، أو ChatGPT، أو نموذج على جهازك.",
+      w1: "ما تحتاج مفتاح API ولا دفع حسب الاستخدام.", w2: "تشتغل على ويندوز وماك ولينكس.", w3: "العملاء ينحفظون في لوحتك على مسار، مرتبين حسب فرصة الإغلاق.",
+      s1: "ثبّت Node.js (نسخة 20.3 أو أحدث).", s1Link: "تحميل Node.js", s2: "افتح الطرفية (Terminal أو PowerShell) وثبّت مسار:", s3: "سجّل دخولك بحساب مسار:", s4: "ابدأ أول بحث:",
+      copy: "نسخ", copied: "تم النسخ", help: "واجهتك مشكلة في التثبيت؟ راسلنا:", notify: "تبي نعلمك أول ما تنزل؟ راسلنا:",
       desk: "تطبيق الكمبيوتر", deskS: "طريقة 2 من 2: التطبيق الكامل بكل الإعدادات.", mob: "تطبيق الجوال", mobS: "مسار على الآيفون والأندرويد."
     },
     en: {
-      langBtn: "العربية", eyebrow: "Way 1 of 2", title: "Masar CLI", soon: "Coming soon", soonBtn: "Download coming soon", web: "Use it in your browser now",
-      lead: "Masar's command-line tool, for people on Claude Pro or Max who don't have an API key.",
-      w1: "No API key and no pay-per-use bills.", w2: "Runs on Windows, macOS and Linux.", w3: "The same leads ranked by closing chance, saved to Excel.",
-      notify: "Want to know when it's out? Email us:",
+      langBtn: "العربية", eyebrow: "Way 1 of 2", title: "Masar CLI", soon: "Coming soon", soonBtn: "Download coming soon", web: "Or use Masar in your browser",
+      lead: "Masar's command-line tool. It runs on the AI you already have: Claude Pro or Max, ChatGPT, or a model on your own computer.",
+      w1: "No API key and no pay-per-use bills.", w2: "Runs on Windows, macOS and Linux.", w3: "Leads go to your Masar dashboard, ranked by closing chance.",
+      s1: "Install Node.js (version 20.3 or newer).", s1Link: "Get Node.js", s2: "Open a terminal (Terminal or PowerShell) and install Masar:", s3: "Sign in with your Masar account:", s4: "Run your first search:",
+      copy: "Copy", copied: "Copied", help: "Stuck installing? Email us:", notify: "Want to know when it's out? Email us:",
       desk: "Desktop app", deskS: "Way 2 of 2: the full app with everything set up.", mob: "Phone app", mobS: "Masar on iPhone and Android."
     }
   };
@@ -102,7 +125,7 @@ html[lang="en"] h1 { letter-spacing: -0.03em; line-height: 1.05; }
     ['<span class="m">  </span>', "Searching the map…"],
     ['<span class="m">  </span>', "Checking 64 businesses…"],
     ['<span class="h">  ✓ </span>', "38 leads ranked by closing chance"],
-    ['<span class="m">  </span>', "Saved leads.xlsx"]
+    ['<span class="m">  </span>', "Saved to your Masar dashboard"]
   ];
   let timer;
   function play() {
@@ -120,6 +143,17 @@ html[lang="en"] h1 { letter-spacing: -0.03em; line-height: 1.05; }
     };
     step();
   }
+  // The install command points at this site's own copy of the CLI package.
+  const pkg = location.origin + "/cli/masar-cli.tgz";
+  $("#cmdInstall").textContent = "npm install -g " + pkg;
+  // If the package is missing from this deployment, show "coming soon" instead of a broken command.
+  fetch(pkg, { method: "HEAD" }).then((r) => { if (!r.ok) document.body.classList.add("unavailable"); }).catch(() => {});
+  document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => {
+    const text = document.getElementById(b.dataset.copy).textContent.trim();
+    const done = () => { b.textContent = D[Masar.lang].copied; setTimeout(() => { b.textContent = D[Masar.lang].copy; }, 1600); };
+    const select = () => { const r = document.createRange(); r.selectNodeContents(document.getElementById(b.dataset.copy)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+  }));
   Masar.onLang(() => { document.title = Masar.lang === "ar" ? "مسار CLI" : "Masar CLI"; });
   Masar.init(D);
   play();

@@ -53,6 +53,7 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
 .dl { display: grid; gap: 10px; }
 .dl-opt { display: flex; align-items: center; gap: 12px; padding: 14px; }
 .dl-opt.mine { border-color: var(--mint); }
+a.dl-opt { color: inherit; text-decoration: none; }
 .dl-opt .oi { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.05); flex: none; }
 .dl-opt .oi svg { width: 22px; height: 22px; }
 .dl-opt .ot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -150,14 +151,14 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
       e2: "الخطوة 1 من 5", h2: "مين تبيع لهم؟", p2: "اختر القطاعات اللي تستهدفها. تقدر تغيّرها بعدين.", idealL: "صف عميلك المثالي (اختياري)", idealPh: "مثال: مقاهي مستقلة فتحت آخر سنة، فيها أكثر من 5 موظفين",
       e3: "الخطوة 2 من 5", h3: "وين عملاؤك؟", p3: "اختر المدن. بحث واحد يقدر يغطيها كلها.",
       e4: "الخطوة 3 من 5", h4: "وش هدفك؟", p4: "نستخدمه عشان نوريك تقدمك ونرتّب العملاء لك.", gLeads: "عملاء جدد بالأسبوع", gMeet: "اجتماعات بالشهر", gDeal: "متوسط قيمة الصفقة", gCur: "العملة",
-      e5: "الخطوة 4 من 5", h5: "اربط أدواتك", p5: "خل العملاء يوصلون للمكان اللي تشتغل فيه. اختياري، وتقدر تسويه من لوحة التحكم.", connect: "ربط", connected: "مربوط",
-      e6: "الخطوة 5 من 5", h6: "مسار جاي لجهازك", p6: "استخدم مسار من المتصفح الحين. أداة سطر الأوامر وتطبيقات الكمبيوتر والجوال جاية قريباً.", soonTag: "قريباً", download: "تحميل", yours: "جهازك",
+      e5: "الخطوة 4 من 5", h5: "وش الأدوات اللي تستخدمها؟", p5: "الربط مع هذي الأدوات جاي قريباً. اختر اللي تستخدمها، ونشغّلها لك أول ما تجهز. اختياري.", connect: "ربط", connected: "مربوط",
+      e6: "الخطوة 5 من 5", h6: "مسار جاي لجهازك", p6: "استخدم مسار من المتصفح الحين، أو ثبّت أداة سطر الأوامر. تطبيقات الكمبيوتر والجوال جاية قريباً.", soonTag: "قريباً", installTag: "ثبّته", download: "تحميل", yours: "جهازك",
       soon: "تطبيق الكمبيوتر قيد التطوير. بنرسل لك رابط التحميل على إيميلك أول ما يجهز.", iosHow: "ثبّته على الآيفون:", iosSteps: ["افتح موقع مسار في سفاري", "اضغط زر المشاركة", "اختر «إضافة إلى الشاشة الرئيسية»"], andHow: "ثبّته على الأندرويد:", andSteps: ["افتح موقع مسار في كروم", "اضغط القائمة ⋮", "اختر «تثبيت التطبيق»"],
       saved: "تم حفظ إعداداتك",
       ind: ["مطاعم ومقاهي", "عيادات", "عقارات", "مقاولات", "تجزئة", "خدمات الشركات", "تعليم وتدريب", "فنادق وسياحة", "صالونات وتجميل", "لوجستيات"],
       countries: [["الأردن", ["عمّان", "إربد", "الزرقاء", "العقبة"]], ["السعودية", ["الرياض", "جدة", "الدمام", "مكة", "المدينة"]], ["الإمارات", ["دبي", "أبوظبي", "الشارقة"]], ["قطر", ["الدوحة"]], ["الكويت", ["الكويت"]], ["البحرين", ["المنامة"]], ["عُمان", ["مسقط"]]],
       conns: [["WhatsApp Business", "أرسل العملاء الساخنين لواتسابك", "#25a366", "WA"], ["Gmail", "تابع العملاء من إيميلك", "#c5483b", "G"], ["Google Sheets", "صدّر العملاء تلقائياً لجدول", "#1e8e4f", "S"], ["HubSpot", "أضف العملاء لنظام CRM", "#e2683c", "H"]],
-      os: { cli: ["مسار CLI", "لمشتركي Claude Pro و Max، بدون مفتاح API"], mac: ["ماك", "macOS 12 أو أحدث"], win: ["ويندوز", "Windows 10 و 11"], lin: ["لينكس", "Ubuntu و Debian"], iph: ["آيفون", "iOS 16 أو أحدث"], and: ["أندرويد", "Android 10 أو أحدث"] }
+      os: { cli: ["مسار CLI", "باشتراك Claude أو ChatGPT، بدون مفتاح API"], mac: ["ماك", "macOS 12 أو أحدث"], win: ["ويندوز", "Windows 10 و 11"], lin: ["لينكس", "Ubuntu و Debian"], iph: ["آيفون", "iOS 16 أو أحدث"], and: ["أندرويد", "Android 10 أو أحدث"] }
     },
     en: {
       langBtn: "العربية", skip: "Skip", back: "Back", next: "Next", start: "Let's start", finish: "Go to dashboard",
@@ -165,14 +166,14 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
       e2: "Step 1 of 5", h2: "Who do you sell to?", p2: "Pick the industries you target. You can change them later.", idealL: "Describe your ideal customer (optional)", idealPh: "For example: independent cafés opened in the last year, with more than 5 staff",
       e3: "Step 2 of 5", h3: "Where are your customers?", p3: "Pick the cities. One search can cover all of them.",
       e4: "Step 3 of 5", h4: "What's your goal?", p4: "We use it to show your progress and rank leads for you.", gLeads: "New leads per week", gMeet: "Meetings per month", gDeal: "Average deal size", gCur: "Currency",
-      e5: "Step 4 of 5", h5: "Connect your tools", p5: "Send leads to where you already work. Optional, and you can do it later from the dashboard.", connect: "Connect", connected: "Connected",
-      e6: "Step 5 of 5", h6: "Masar is coming to your devices", p6: "Use Masar in your browser now. The command-line tool and the computer and phone apps are coming soon.", soonTag: "Coming soon", download: "Download", yours: "Your device",
+      e5: "Step 4 of 5", h5: "Which tools do you use?", p5: "Sending leads to these tools is coming soon. Pick the ones you use and we'll turn them on for you first. Optional.", connect: "Connect", connected: "Connected",
+      e6: "Step 5 of 5", h6: "Masar is coming to your devices", p6: "Use Masar in your browser now, or install the command-line tool. The computer and phone apps are coming soon.", soonTag: "Coming soon", installTag: "Install", download: "Download", yours: "Your device",
       soon: "The computer app is still being built. We'll email you the download link as soon as it's ready.", iosHow: "Install on iPhone:", iosSteps: ["Open the Masar site in Safari", "Tap the Share button", "Choose “Add to Home Screen”"], andHow: "Install on Android:", andSteps: ["Open the Masar site in Chrome", "Tap the ⋮ menu", "Choose “Install app”"],
       saved: "Your settings are saved",
       ind: ["Restaurants & cafés", "Clinics", "Real estate", "Contracting", "Retail", "Business services", "Education & training", "Hotels & tourism", "Salons & beauty", "Logistics"],
       countries: [["Jordan", ["Amman", "Irbid", "Zarqa", "Aqaba"]], ["Saudi Arabia", ["Riyadh", "Jeddah", "Dammam", "Makkah", "Madinah"]], ["UAE", ["Dubai", "Abu Dhabi", "Sharjah"]], ["Qatar", ["Doha"]], ["Kuwait", ["Kuwait City"]], ["Bahrain", ["Manama"]], ["Oman", ["Muscat"]]],
       conns: [["WhatsApp Business", "Send hot leads to your WhatsApp", "#25a366", "WA"], ["Gmail", "Follow up from your inbox", "#c5483b", "G"], ["Google Sheets", "Export leads to a sheet automatically", "#1e8e4f", "S"], ["HubSpot", "Add leads to your CRM", "#e2683c", "H"]],
-      os: { cli: ["Masar CLI", "For Claude Pro and Max users, no API key needed"], mac: ["Mac", "macOS 12 or later"], win: ["Windows", "Windows 10 and 11"], lin: ["Linux", "Ubuntu and Debian"], iph: ["iPhone", "iOS 16 or later"], and: ["Android", "Android 10 or later"] }
+      os: { cli: ["Masar CLI", "With your Claude or ChatGPT plan, no API key needed"], mac: ["Mac", "macOS 12 or later"], win: ["Windows", "Windows 10 and 11"], lin: ["Linux", "Ubuntu and Debian"], iph: ["iPhone", "iOS 16 or later"], and: ["Android", "Android 10 or later"] }
     }
   };
   $("#brand").innerHTML = M.mark(32) + '<span class="word"><b>masar</b><small>مسار</small></span>';
@@ -240,9 +241,11 @@ html[lang="en"] .step h1 { line-height: 1.1; letter-spacing: -0.03em; }
       setup.conns = on ? setup.conns.filter((x) => x !== i) : setup.conns.concat(i);
       b.classList.toggle("mint", !on); b.textContent = !on ? d.connected : d.connect;
     }));
-    // The CLI and the apps are not out yet: show them with a "coming soon" tag
+    // The CLI links to its install page; the apps are not out yet and show a "coming soon" tag
     const order = ["iph", "and"].includes(myOS) ? ["cli", "iph", "and", "mac", "win", "lin"] : ["cli", "mac", "win", "lin", "iph", "and"];
-    $("#dl").innerHTML = order.map((k) => '<div class="card dl-opt' + (k === "cli" ? " mine" : "") + '"><span class="oi">' + OSI[k] + '</span><span class="ot"><b>' + d.os[k][0] + "</b><small>" + d.os[k][1] + '</small></span><span class="soon-tag">' + d.soonTag + "</span></div>").join("");
+    $("#dl").innerHTML = order.map((k) => k === "cli"
+      ? '<a class="card dl-opt mine" href="/cli" target="_blank" rel="noopener"><span class="oi">' + OSI[k] + '</span><span class="ot"><b>' + d.os[k][0] + "</b><small>" + d.os[k][1] + '</small></span><span class="btn sm mint">' + d.installTag + "</span></a>"
+      : '<div class="card dl-opt"><span class="oi">' + OSI[k] + '</span><span class="ot"><b>' + d.os[k][0] + "</b><small>" + d.os[k][1] + '</small></span><span class="soon-tag">' + d.soonTag + "</span></div>").join("");
     $("#gLeads").value = setup.leads; $("#gMeet").value = setup.meet; $("#gDeal").value = setup.deal; $("#gCur").value = setup.cur; $("#ideal").value = setup.ideal;
     sync();
     go(cur, true);
