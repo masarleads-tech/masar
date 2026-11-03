@@ -42,7 +42,7 @@ export async function chargeCredits(account: Account, n: number): Promise<number
 }
 
 export function noCreditsError() {
-  return new HttpError(402, "You have no leads left. Contact us to add more.");
+  return new HttpError(402, "You have no leads left. Choose a plan at /billing to add more.");
 }
 
 /** The customer's own Claude key, set by the admin. Needs SUPABASE_SERVICE_ROLE_KEY on the server. */

@@ -443,3 +443,86 @@ alter table public.leads add column if not exists category text;
 alter table public.leads add column if not exists city text;
 alter table public.leads add column if not exists sources text[] not null default '{}';
 create index if not exists leads_user_category_idx on public.leads (user_id, category);
+
+
+-- ---------- Payments (PayPal) ----------
+-- A member pays for a number of 30-day months of Basic or Premium up front. The website's server
+-- creates a row here when it opens a PayPal order, and marks it paid once PayPal confirms the capture
+-- (from the checkout page or from PayPal's webhook, whichever comes first). Paying extends the plan
+-- the same way the admin page does. Only the server touches this table (service role key);
+-- members can read their own payments.
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.profiles (id) on delete cascade,
+  provider text not null default 'paypal' check (provider in ('paypal', 'stripe', 'whop', 'stcpay', 'manual')),
+  provider_order_id text unique,
+  provider_capture_id text unique,
+  plan text not null check (plan in ('basic', 'premium')),
+  months integer not null check (months between 1 and 24),
+  amount numeric(10, 2) not null check (amount > 0),
+  currency text not null,
+  status text not null default 'pending' check (status in ('pending', 'paid', 'refunded', 'failed')),
+  payer_email text,
+  created_at timestamptz not null default now(),
+  paid_at timestamptz,
+  refunded_at timestamptz
+);
+create index if not exists payments_user_idx on public.payments (user_id, created_at desc);
+alter table public.payments enable row level security;
+drop policy if exists "read own payments" on public.payments;
+create policy "read own payments" on public.payments for select using (user_id = public.current_user_id());
+grant select on public.payments to authenticated;
+
+-- Start or extend a paid plan by `months` months of 30 days. Used by admin_set_plan and by payments.
+create or replace function public.extend_plan(uid text, new_plan text, months integer) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if new_plan not in ('basic', 'premium') then raise exception 'Plan must be basic or premium'; end if;
+  update public.profiles set
+    plan_until = case when plan = new_plan then greatest(coalesce(plan_until, now()), now()) else now() end
+      + make_interval(days => 30 * months),
+    month_started = case when plan in ('basic', 'premium') then month_started else null end,
+    plan = new_plan
+  where id = uid;
+  perform public.refresh_plan(uid);
+end $$;
+
+-- Marks a pending payment paid and gives the member their months, once. Safe to call twice
+-- (the checkout page and PayPal's webhook both call it): the second call changes nothing.
+-- Returns true when this call gave the plan.
+create or replace function public.complete_payment(order_id text, capture_id text, paid_amount numeric, paid_currency text, payer text)
+returns boolean
+language plpgsql security definer set search_path = public as $$
+declare p public.payments;
+begin
+  select * into p from public.payments where provider_order_id = order_id for update;
+  if not found then raise exception 'Unknown order %', order_id; end if;
+  if p.status <> 'pending' then return false; end if;
+  if paid_amount < p.amount or upper(paid_currency) <> upper(p.currency) then
+    raise exception 'Paid % % but the order was % %', paid_amount, paid_currency, p.amount, p.currency;
+  end if;
+  update public.payments set status = 'paid', provider_capture_id = capture_id, payer_email = payer, paid_at = now() where id = p.id;
+  perform public.extend_plan(p.user_id, p.plan, p.months);
+  return true;
+end $$;
+
+revoke all on function public.extend_plan(text, text, integer) from public, anon, authenticated;
+revoke all on function public.complete_payment(text, text, numeric, text, text) from public, anon, authenticated;
+grant execute on function public.extend_plan(text, text, integer) to service_role;
+grant execute on function public.complete_payment(text, text, numeric, text, text) to service_role;
+
+-- The admin page reuses the same logic.
+create or replace function public.admin_set_plan(target_email text, new_plan text, months integer) returns void
+language plpgsql security definer set search_path = public as $$
+declare uid text;
+begin
+  perform public.assert_admin();
+  if new_plan not in ('basic', 'premium') then raise exception 'Plan must be basic or premium'; end if;
+  uid := public.account_by_email(target_email);
+  if uid is null then raise exception 'No account with that email'; end if;
+  if months <= 0 then
+    update public.profiles set plan = 'free', plan_until = null where id = uid;
+  else
+    perform public.extend_plan(uid, new_plan, months);
+  end if;
+end $$;

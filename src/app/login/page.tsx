@@ -8,9 +8,12 @@ import { Logo, Mark, useSite } from "@/components/site";
 export default function Login() {
   const { t, config, toggleLang } = useSite();
   const [signup, setSignup] = useState(false);
+  const [next, setNext] = useState("/dashboard");
 
   useEffect(() => {
-    setSignup(new URLSearchParams(location.search).get("mode") === "signup");
+    const q = new URLSearchParams(location.search);
+    setSignup(q.get("mode") === "signup");
+    setNext(safeNext(q.get("next")));
   }, []);
 
   // Clerk's screens take their language from the server, so reload after switching.
@@ -42,8 +45,8 @@ export default function Login() {
           {signup && <p className="w-full rounded-[10px] bg-teal-100 p-3 text-center text-sm font-semibold text-teal-800">{t.signUpPitch}</p>}
           {config && !config.accountsEnabled && <p className="text-muted text-sm">Accounts are switched off on this copy of Masar.</p>}
           {config?.accountsEnabled && (signup
-            ? <SignUp routing="hash" signInUrl="/login" forceRedirectUrl="/dashboard" />
-            : <SignIn routing="hash" signUpUrl="/login?mode=signup" forceRedirectUrl="/dashboard" />)}
+            ? <SignUp routing="hash" signInUrl={next === "/dashboard" ? "/login" : `/login?next=${encodeURIComponent(next)}`} forceRedirectUrl={next} />
+            : <SignIn routing="hash" signUpUrl={`/login?mode=signup${next === "/dashboard" ? "" : `&next=${encodeURIComponent(next)}`}`} forceRedirectUrl={next} />)}
           <p className="text-muted text-center text-xs">
             {signup && `${t.agree} `}
             <a href="/legal/terms" target="_blank" className="underline">{t.legalTerms}</a> · <a href="/legal/privacy" target="_blank" className="underline">{t.legalPrivacy}</a>
@@ -52,4 +55,9 @@ export default function Login() {
       </div>
     </main>
   );
+}
+
+/** Where to go after logging in: only a page on this site (?next=/billing), never another site. */
+function safeNext(raw: string | null) {
+  return raw && /^\/(?!\/)[\w\-/?=&.%]*$/.test(raw) ? raw : "/dashboard";
 }

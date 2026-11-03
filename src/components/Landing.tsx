@@ -150,7 +150,7 @@ export function Landing({ t, lang, onLang }: { t: Strings; lang: Lang; onLang: (
               </div>
               <div className="mt-2 text-sm text-white/70">{c.planAmount}</div>
               <Ticks items={c.planFeatures} dark />
-              <a href={`mailto:${CONTACT_EMAIL}?subject=Masar%20Basic%20or%20Premium`} className="btn-primary mt-8 w-full">{c.planCta}</a>
+              <a href="/billing" className="btn-primary mt-8 w-full">{c.planCta}</a>
               <p className="mt-3 text-xs text-white/50">{c.offerNote} <a href="/legal/terms" className="underline underline-offset-2 hover:text-white">{c.terms}</a></p>
             </div>
           </div>

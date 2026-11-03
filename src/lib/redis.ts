@@ -35,6 +35,7 @@ const LIMITS = {
   enrich: [120, "10 m"], // checks go in batches of 5, so one 100-lead search is about 20 calls
   cliAuthStart: [10, "10 m"],
   cliAuthPoll: [60, "1 m"], // the CLI asks every 3 seconds
+  checkout: [20, "10 m"], // each opens a PayPal order
 } as const satisfies Record<string, readonly [number, `${number} ${"s" | "m" | "h"}`]>;
 export type LimitName = keyof typeof LIMITS;
 

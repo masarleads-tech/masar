@@ -12,7 +12,7 @@ export const COMPANY = {
   privacyEmail: process.env.NEXT_PUBLIC_PRIVACY_EMAIL || process.env.NEXT_PUBLIC_CONTACT_EMAIL || "[privacy email]",
   law: "[Governing law, e.g. the laws of the Emirate of Dubai and the federal laws of the UAE]",
   courts: "[Courts, e.g. the courts of Dubai]",
-  updated: "29 October 2026",
+  updated: "3 November 2026",
 };
 
 export type DocKey = "privacy" | "terms" | "refund";
@@ -34,7 +34,7 @@ const en: Record<DocKey, LegalDoc> = {
         "Service data: the searches you run (what you sell, target customer, cities), the results we return to you, your plan, and the number of leads used.",
         "Technical data: login session cookies, IP address and basic logs needed to keep the service secure.",
         "Usage data: the pages you visit and the buttons you use on the Masar website, to understand how the service is used and improve it.",
-        "Payment data: if you subscribe, payment is handled by our payment provider or by bank transfer. We keep the invoice record, not your full card details.",
+        "Payment data: if you subscribe, payment is handled by PayPal (PayPal account or card) or by bank transfer. We keep the payment record (plan, amount, date, PayPal reference and the payer email PayPal shares), never your card details.",
       ] },
       { h: "3. Data in the leads we find", p: [
         "Masar searches public sources (Google Maps listings, business websites, and public Instagram, Facebook and LinkedIn pages) for business contact information: business name, address, business phone and email, website, public social accounts, and the names and job titles of people in public business roles.",
@@ -48,7 +48,7 @@ const en: Record<DocKey, LegalDoc> = {
         "Business contact data in leads is processed for B2B prospecting based on legitimate interest, limited to information the business or person published for business purposes.",
       ] },
       { h: "5. Who we share data with", p: [
-        "Supabase (account login and database), Vercel (website hosting), Anthropic (AI research on public web pages; your search text is sent to it to run the research), Google (Maps search, when enabled), PostHog (website analytics), Sentry (error reports, without IP addresses) and our payment provider.",
+        "Supabase (account login and database), Vercel (website hosting), Anthropic (AI research on public web pages; your search text is sent to it to run the research), Google (Maps search, when enabled), PostHog (website analytics), Sentry (error reports, without IP addresses) and PayPal (payments).",
         "These providers process data on our behalf under written terms. We do not sell your personal data.",
         "We may disclose data where required by law or by a competent authority in the UAE, Saudi Arabia or another GCC country.",
       ] },
@@ -170,7 +170,7 @@ const ar: Record<DocKey, LegalDoc> = {
         "بيانات الخدمة: عمليات البحث التي تجريها (ما تبيعه، العميل المستهدف، المدن)، والنتائج التي نعيدها لك، وباقتك، وعدد العملاء المستخدمين.",
         "البيانات التقنية: ملفات تعريف الارتباط الخاصة بجلسة الدخول، وعنوان IP، والسجلات الأساسية اللازمة لحماية الخدمة.",
         "بيانات الاستخدام: الصفحات التي تزورها والأزرار التي تستخدمها في موقع مسار، لفهم طريقة استخدام الخدمة وتحسينها.",
-        "بيانات الدفع: عند الاشتراك يتم الدفع عبر مزوّد الدفع أو التحويل البنكي. نحتفظ بسجل الفاتورة فقط، وليس ببيانات بطاقتك كاملة.",
+        "بيانات الدفع: عند الاشتراك يتم الدفع عبر PayPal (حساب PayPal أو بطاقة) أو التحويل البنكي. نحتفظ بسجل الدفع (الباقة والمبلغ والتاريخ ومرجع PayPal والبريد الذي يشاركه PayPal)، ولا نحتفظ ببيانات بطاقتك أبدًا.",
       ] },
       { h: "3. البيانات الواردة في نتائج العملاء المحتملين", p: [
         "يبحث مسار في مصادر عامة (قوائم خرائط Google، ومواقع الأنشطة التجارية، وصفحات إنستغرام وفيسبوك ولينكدإن العامة) عن بيانات التواصل التجارية: اسم النشاط، والعنوان، وهاتف وبريد النشاط، والموقع الإلكتروني، والحسابات العامة، وأسماء ومسميات الأشخاص في الأدوار التجارية العامة.",
@@ -184,7 +184,7 @@ const ar: Record<DocKey, LegalDoc> = {
         "تُعالج بيانات التواصل التجارية في النتائج لأغراض التسويق بين الشركات على أساس المصلحة المشروعة، وتقتصر على ما نشره النشاط أو الشخص لأغراض تجارية.",
       ] },
       { h: "5. مع من نشارك البيانات", p: [
-        "Supabase (تسجيل الدخول وقاعدة البيانات)، وVercel (استضافة الموقع)، وAnthropic (البحث بالذكاء الاصطناعي في الصفحات العامة؛ يُرسل إليها نص البحث لتنفيذه)، وGoogle (البحث في الخرائط عند تفعيله)، وPostHog (تحليلات الموقع)، وSentry (تقارير الأخطاء، دون عناوين IP)، ومزوّد الدفع.",
+        "Supabase (تسجيل الدخول وقاعدة البيانات)، وVercel (استضافة الموقع)، وAnthropic (البحث بالذكاء الاصطناعي في الصفحات العامة؛ يُرسل إليها نص البحث لتنفيذه)، وGoogle (البحث في الخرائط عند تفعيله)، وPostHog (تحليلات الموقع)، وSentry (تقارير الأخطاء، دون عناوين IP)، وPayPal (المدفوعات).",
         "يعالج هؤلاء المزوّدون البيانات نيابة عنا بموجب شروط مكتوبة. لا نبيع بياناتك الشخصية.",
         "قد نفصح عن البيانات إذا طلب ذلك القانون أو جهة مختصة في الإمارات أو السعودية أو أي دولة خليجية أخرى.",
       ] },

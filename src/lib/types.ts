@@ -129,4 +129,14 @@ export interface SiteConfig {
   hasServerGoogleKey: boolean;
   /** Starting search criteria from the member's setup tour answers. */
   defaults?: Partial<Brief>;
+  /** PayPal checkout (public client id and prices), or null when PayPal is off. */
+  paypal?: PaypalConfig | null;
+}
+
+export interface PaypalConfig {
+  clientId: string;
+  currency: string;
+  live: boolean;
+  plans: { plan: "basic" | "premium"; monthly: number }[];
+  months: number[];
 }

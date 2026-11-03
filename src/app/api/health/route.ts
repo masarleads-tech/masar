@@ -1,5 +1,6 @@
 import { redisStatus } from "@/lib/redis";
 import { pineconeStatus } from "@/lib/pinecone";
+import { paypalStatus } from "@/lib/paypal";
 
 export const dynamic = "force-dynamic";
 
@@ -27,5 +28,6 @@ export async function GET() {
     SENTRY_PROJECT: has("SENTRY_PROJECT") ? "ok" : "missing",
     UPSTASH_REDIS: await redisStatus(),
     PINECONE: await pineconeStatus(),
+    PAYPAL: await paypalStatus(),
   });
 }
