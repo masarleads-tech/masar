@@ -143,7 +143,7 @@ const en: Record<DocKey, LegalDoc> = {
       ] },
       { h: "4. When we do not refund", p: [
         "Leads that have already been delivered are a digital service that has been performed, so they are not refundable, except as set out above or where the law requires.",
-        "Unused leads at the end of a week, and accounts closed for breaking the Terms of service.",
+        "Unused leads at the end of a month, and accounts closed for breaking the Terms of service.",
       ] },
       { h: "5. Lead quality", p: [
         "If a lead is clearly wrong (for example, the business does not exist or the phone belongs to another business), tell us within 14 days with the lead name. We will replace it with a credit for one new lead.",
